@@ -110,62 +110,58 @@
   <!-- Container Principal -->
   <div class="container">
 
-    <!-- ══════ HOME — ALUNO ══════ -->
-    <div id="homeAluno">
-      <div class="section-label">Olá, <span id="homeNome">Usuário</span> 👋</div>
-      <div class="stats-grid">
-        <div class="stat-card orange">
-          <span class="s-icon">🔥</span>
-          <div class="s-label">Sequência</div>
-          <div class="s-value orange" id="statSequencia">0</div>
-        </div>
-        <div class="stat-card blue">
-          <span class="s-icon">📅</span>
-          <div class="s-label">Esta Semana</div>
-          <div class="s-value blue" id="statSemana">0</div>
-        </div>
-        <div class="stat-card green">
-          <span class="s-icon">✅</span>
-          <div class="s-label">Total Treinos</div>
-          <div class="s-value green" id="statTotal">0</div>
-        </div>
-        <div class="stat-card purple">
-          <span class="s-icon">⏱️</span>
-          <div class="s-label">Tempo Total</div>
-          <div class="s-value purple" id="statTempo">0h</div>
-        </div>
-      </div>
-      <div class="section-label">Treino de Hoje</div>
-      <div id="treinoHoje" class="treino-hoje-card">
-        <div class="empty-state">
-          <div class="empty-icon">🏋️</div>
-          <div class="empty-text">Nenhuma ficha de treino ainda</div>
-          <button class="action-btn" onclick="navegarPara('fichas')">
-            <i class="fas fa-plus"></i> Criar Primeira Ficha
-          </button>
-        </div>
-      </div>
-      <div class="section-label">Último Treino</div>
-      <div id="ultimoTreino">
-        <div class="empty-state small">
-          <div class="empty-text" style="font-size:.82rem;">Nenhum treino registrado</div>
-      <!-- Vincular Personal (botão para aluno) -->
-      <div class="section-label" style="margin-top:24px;">Meu Personal</div>
-      <div id="meuPersonalHome">
-        <div class="empty-state small">
-          <div class="empty-text" style="font-size:.82rem;">Sem personal vinculado</div>
-          <button class="action-btn" onclick="abrirCodigoModal()">
-            <i class="fas fa-link"></i> Vincular Personal
-          </button>
-        </div>
-      </div>
-
-          
-        </div>
-      </div>
+<!-- ══════════════ HOME — ALUNO ══════════════ -->
+<div id="homeAluno">
+  <div class="section-label">Resumo</div>
+  <div class="stats-grid">
+    <div class="stat-card orange">
+      <div class="stat-icon"><i class="fas fa-fire"></i></div>
+      <div class="stat-value" id="statSequencia">0</div>
+      <div class="stat-label">Sequência</div>
     </div>
+    <div class="stat-card blue">
+      <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+      <div class="stat-value" id="statSemana">0</div>
+      <div class="stat-label">Esta Semana</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-icon"><i class="fas fa-dumbbell"></i></div>
+      <div class="stat-value" id="statTotal">0</div>
+      <div class="stat-label">Total Treinos</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-icon"><i class="fas fa-clock"></i></div>
+      <div class="stat-value" id="statTempo">0<span class="stat-unit">min</span></div>
+      <div class="stat-label">Tempo Total</div>
+    </div>
+  </div>
 
-    <!-- ══════ HOME — PERSONAL ══════ -->
+  <div class="section-label" style="margin-top:24px;">Treino de Hoje</div>
+  <div id="treinoHoje">
+    <div class="empty-state">
+      <div class="empty-icon">🏋️</div>
+      <div class="empty-text">Nenhuma ficha ativa</div>
+      <button class="action-btn" onclick="navegarPara('fichas')"><i class="fas fa-plus"></i> Criar Primeira Ficha</button>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-top:24px;">Último Treino</div>
+  <div id="ultimoTreino">
+    <div class="empty-state small">
+      <div class="empty-text" style="font-size:.82rem;">Nenhum treino registrado ainda</div>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-top:24px;">Meu Personal</div>
+  <div id="meuPersonalHome">
+    <div class="empty-state small">
+      <div class="empty-text" style="font-size:.82rem;">Sem personal vinculado</div>
+      <button class="action-btn" onclick="abrirCodigoModal()"><i class="fas fa-link"></i> Vincular Personal</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ HOME — PERSONAL ══════════════ -->
     <div id="homePersonal" class="hidden">
       <div class="section-label">Painel do Personal 💪</div>
       <div class="stats-grid">
