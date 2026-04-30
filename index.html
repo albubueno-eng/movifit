@@ -149,6 +149,18 @@
       <div id="ultimoTreino">
         <div class="empty-state small">
           <div class="empty-text" style="font-size:.82rem;">Nenhum treino registrado</div>
+      <!-- Vincular Personal (botão para aluno) -->
+      <div class="section-label" style="margin-top:24px;">Meu Personal</div>
+      <div id="meuPersonalHome">
+        <div class="empty-state small">
+          <div class="empty-text" style="font-size:.82rem;">Sem personal vinculado</div>
+          <button class="action-btn" onclick="abrirCodigoModal()">
+            <i class="fas fa-link"></i> Vincular Personal
+          </button>
+        </div>
+      </div>
+
+          
         </div>
       </div>
     </div>
@@ -477,6 +489,144 @@
     </div>
   </div>
 </div>
+
+  <!-- ══════════════ MODAL: VINCULAR ALUNO (Personal gera código) ══════════════ -->
+<div class="modal-full" id="vincularModal">
+  <div class="modal-bar">
+    <h2><i class="fas fa-user-plus"></i> Vincular Aluno</h2>
+    <button class="modal-close" onclick="fecharVincularModal()">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="form-card" style="text-align:center;">
+      <div style="font-size:3rem; margin-bottom:12px;">🔗</div>
+      <h3 style="color:var(--text-white); margin-bottom:8px;">Código de Vinculação</h3>
+      <p style="color:var(--text-tertiary); font-size:.82rem; margin-bottom:24px;">
+        Compartilhe este código com seu aluno.<br>Ele deve inserir no app para se vincular a você.
+      </p>
+
+      <div id="codigoVinculo" class="codigo-display">
+        <span class="codigo-text" id="codigoText">------</span>
+        <button class="codigo-copy" onclick="copiarCodigo()"><i class="fas fa-copy"></i></button>
+      </div>
+
+      <button class="submit-btn" onclick="gerarNovoCodigo()" style="margin-top:16px;">
+        <i class="fas fa-sync-alt"></i> Gerar Novo Código
+      </button>
+
+      <div class="section-label" style="margin-top:32px;">Ou vincular por e-mail</div>
+      <input type="email" id="vincularEmail" class="form-field" placeholder="E-mail do aluno" style="margin-bottom:12px;">
+      <button class="submit-btn" onclick="vincularPorEmail()" style="background:var(--blue); box-shadow:0 4px 16px rgba(10,132,255,.2);">
+        <i class="fas fa-envelope"></i> Enviar Convite
+      </button>
+    </div>
+
+    <!-- Solicitações pendentes -->
+    <div class="section-label" style="margin-top:24px;">Solicitações Pendentes</div>
+    <div id="listaSolicitacoes">
+      <div class="empty-state small">
+        <div class="empty-text" style="font-size:.8rem;">Nenhuma solicitação pendente</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL: INSERIR CÓDIGO (Aluno se vincula) ══════════════ -->
+<div class="modal-full" id="codigoModal">
+  <div class="modal-bar">
+    <h2><i class="fas fa-link"></i> Vincular Personal</h2>
+    <button class="modal-close" onclick="fecharCodigoModal()">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="form-card" style="text-align:center;">
+      <div style="font-size:3rem; margin-bottom:12px;">🏋️</div>
+      <h3 style="color:var(--text-white); margin-bottom:8px;">Tem um Personal?</h3>
+      <p style="color:var(--text-tertiary); font-size:.82rem; margin-bottom:24px;">
+        Insira o código que seu personal compartilhou com você.
+      </p>
+
+      <input type="text" id="codigoInput" class="form-field codigo-input" placeholder="Ex: ABC123" maxlength="6" style="text-align:center; font-size:1.5rem; font-weight:800; letter-spacing:.3em; text-transform:uppercase;">
+
+      <button class="submit-btn" onclick="enviarSolicitacao()" id="btnEnviarCodigo" style="margin-top:16px;">
+        <i class="fas fa-paper-plane"></i> Enviar Solicitação
+      </button>
+
+      <div id="statusVinculo" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- Personal vinculado -->
+    <div class="section-label" style="margin-top:24px;">Meu Personal</div>
+    <div id="meuPersonal">
+      <div class="empty-state small">
+        <div class="empty-text" style="font-size:.8rem;">Nenhum personal vinculado</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL: DETALHE DO ALUNO (Personal vê) ══════════════ -->
+<div class="modal-full" id="alunoDetalheModal" style="z-index:5500;">
+  <div class="modal-bar">
+    <h2><i class="fas fa-user"></i> <span id="alunoDetalheTitulo">Aluno</span></h2>
+    <button class="modal-close" onclick="fecharAlunoDetalhe()">✕</button>
+  </div>
+  <div class="modal-body">
+    <!-- Info do aluno -->
+    <div class="form-card" style="text-align:center; margin-bottom:16px;">
+      <div class="perfil-avatar" id="alunoDetalheAvatar" style="font-size:1.5rem; width:60px; height:60px;">??</div>
+      <h3 style="color:var(--text-white); margin-bottom:4px;" id="alunoDetalheNome">Nome</h3>
+      <p style="color:var(--text-tertiary); font-size:.8rem;" id="alunoDetalheMeta">Objetivo • Idade</p>
+    </div>
+
+    <!-- Stats do aluno -->
+    <div class="stats-grid" id="alunoDetalheStats">
+      <div class="stat-card orange">
+        <span class="s-icon">🔥</span>
+        <div class="s-label">Sequência</div>
+        <div class="s-value orange" id="alunoStatSeq">0</div>
+      </div>
+      <div class="stat-card blue">
+        <span class="s-icon">📅</span>
+        <div class="s-label">Esta Semana</div>
+        <div class="s-value blue" id="alunoStatSemana">0</div>
+      </div>
+      <div class="stat-card green">
+        <span class="s-icon">✅</span>
+        <div class="s-label">Total Treinos</div>
+        <div class="s-value green" id="alunoStatTotal">0</div>
+      </div>
+      <div class="stat-card purple">
+        <span class="s-icon">⏱️</span>
+        <div class="s-label">Tempo Total</div>
+        <div class="s-value purple" id="alunoStatTempo">0h</div>
+      </div>
+    </div>
+
+    <!-- Fichas do aluno -->
+    <div class="section-label" style="margin-top:24px;">Fichas do Aluno</div>
+    <button class="action-btn-full" onclick="criarFichaParaAluno()" style="margin-bottom:12px;">
+      <i class="fas fa-plus"></i> Criar Ficha para este Aluno
+    </button>
+    <div id="alunoDetalheFichas">
+      <div class="empty-state small">
+        <div class="empty-text" style="font-size:.8rem;">Nenhuma ficha criada</div>
+      </div>
+    </div>
+
+    <!-- Histórico recente -->
+    <div class="section-label" style="margin-top:24px;">Últimos Treinos</div>
+    <div id="alunoDetalheHistorico">
+      <div class="empty-state small">
+        <div class="empty-text" style="font-size:.8rem;">Nenhum treino registrado</div>
+      </div>
+    </div>
+
+    <!-- Ações -->
+    <button class="submit-btn" onclick="desvincularAluno()" style="background:var(--red); margin-top:24px; box-shadow:0 4px 16px rgba(255,69,58,.2);">
+      <i class="fas fa-unlink"></i> Desvincular Aluno
+    </button>
+  </div>
+</div>
+
 
 <!-- ══════════════ OVERLAYS ══════════════ -->
 <div class="success-overlay" id="successOverlay">
