@@ -144,8 +144,6 @@ function selecionarTipo(btn, tipo) {
 }
 
 function fazerCadastro() {
-  var lgpd = document.getElementById('lgpdCheck');
-if (lgpd && !lgpd.checked) { err.textContent = 'Aceite os termos da LGPD para criar sua conta'; shakeAuth(); return; }
   var nome = document.getElementById('cadNome').value.trim();
   var email = document.getElementById('cadEmail').value.trim();
   var senha = document.getElementById('cadPass').value.trim();
@@ -154,9 +152,9 @@ if (lgpd && !lgpd.checked) { err.textContent = 'Aceite os termos da LGPD para cr
   var btn = document.getElementById('cadBtn');
 
   err.textContent = '';
-  
-var lgpd = document.getElementById('lgpdCheck');
-if (lgpd && !lgpd.checked) { err.textContent = 'Aceite os termos da LGPD para criar sua conta'; shakeAuth(); return; }
+
+  var lgpd = document.getElementById('lgpdCheck');
+  if (lgpd && !lgpd.checked) { err.textContent = 'Aceite os termos da LGPD para criar sua conta'; shakeAuth(); return; }
 
   if (!nome) { err.textContent = 'Informe seu nome'; shakeAuth(); return; }
   if (!email) { err.textContent = 'Informe seu e-mail'; shakeAuth(); return; }
@@ -169,11 +167,7 @@ if (lgpd && !lgpd.checked) { err.textContent = 'Aceite os termos da LGPD para cr
   auth.createUserWithEmailAndPassword(email, senha)
     .then(function(result) {
       var user = result.user;
-
-      // Atualizar nome no Auth
       user.updateProfile({ displayName: nome });
-
-      // Criar perfil no Firestore
       return db.collection('users').doc(user.uid).set({
         nome: nome,
         email: email,
@@ -185,9 +179,6 @@ if (lgpd && !lgpd.checked) { err.textContent = 'Aceite os termos da LGPD para cr
         criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
         atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
       });
-    })
-    .then(function() {
-      // onAuthStateChanged cuida do resto
     })
     .catch(function(error) {
       var msg = traduzirErro(error.code);
