@@ -26,21 +26,19 @@
   <div class="ld-text" id="ldText">Carregando...</div>
 </div>
 
-<!-- ══════════════ AUTH: LOGIN ══════════════ -->
+<!-- ══════════════ AUTH ══════════════ -->
 <div id="authScreen" class="hidden">
   <div class="auth-card">
     <div class="brand-icon">🏋️</div>
     <h2>MoviFit</h2>
     <p class="sub">Seu treino inteligente</p>
 
-    <!-- Login Form -->
     <div id="loginForm">
       <input type="email" id="loginEmail" class="auth-field" placeholder="E-mail" autocomplete="email">
       <div class="auth-pass-wrap">
         <input type="password" id="loginPass" class="auth-field" placeholder="Senha" autocomplete="current-password">
         <button type="button" class="eye-btn" onclick="toggleSenha('loginPass','loginEye')"><span id="loginEye">👁️</span></button>
       </div>
-      
       <button class="auth-btn" id="loginBtn" onclick="fazerLogin()">
         <i class="fas fa-sign-in-alt"></i> Entrar
       </button>
@@ -52,7 +50,6 @@
       <p class="auth-link">Não tem conta? <a href="#" onclick="mostrarCadastro(); return false;">Criar conta</a></p>
     </div>
 
-    <!-- Cadastro Form -->
     <div id="cadastroForm" class="hidden">
       <input type="text" id="cadNome" class="auth-field" placeholder="Seu nome completo">
       <input type="email" id="cadEmail" class="auth-field" placeholder="E-mail" autocomplete="email">
@@ -73,15 +70,9 @@
         </div>
       </div>
       <div class="lgpd-wrap">
-  <input type="checkbox" id="lgpdCheck">
-  <label for="lgpdCheck">Declaro que li e concordo com a recolha de dados estritamente para fins de uso do app e melhoria da experiência, conforme a <strong>LGPD</strong> (Lei nº 13.709/2018).</label>
-</div>
-
-      <div class="lgpd-wrap">
-  <input type="checkbox" id="lgpdCheck">
-  <label for="lgpdCheck">Declaro que li e concordo com a recolha de dados estritamente para fins de uso do app e melhoria da experiência, conforme a <strong>LGPD</strong> (Lei nº 13.709/2018).</label>
-</div>
-
+        <input type="checkbox" id="lgpdCheck">
+        <label for="lgpdCheck">Declaro que li e concordo com a recolha de dados estritamente para fins de uso do app e melhoria da experiência, conforme a <strong>LGPD</strong> (Lei nº 13.709/2018).</label>
+      </div>
       <button class="auth-btn" id="cadBtn" onclick="fazerCadastro()">
         <i class="fas fa-user-plus"></i> Criar Conta
       </button>
@@ -95,7 +86,6 @@
 <!-- ══════════════ MAIN APP ══════════════ -->
 <div id="mainApp" class="hidden">
 
-  <!-- Top Bar -->
   <div class="top-bar">
     <div class="top-bar-row1">
       <div class="brand">
@@ -123,8 +113,6 @@
     <!-- ══════ HOME — ALUNO ══════ -->
     <div id="homeAluno">
       <div class="section-label">Olá, <span id="homeNome">Usuário</span> 👋</div>
-
-      <!-- Stats Rápidos -->
       <div class="stats-grid">
         <div class="stat-card orange">
           <span class="s-icon">🔥</span>
@@ -147,8 +135,6 @@
           <div class="s-value purple" id="statTempo">0h</div>
         </div>
       </div>
-
-      <!-- Treino de Hoje -->
       <div class="section-label">Treino de Hoje</div>
       <div id="treinoHoje" class="treino-hoje-card">
         <div class="empty-state">
@@ -159,8 +145,6 @@
           </button>
         </div>
       </div>
-
-      <!-- Último Treino -->
       <div class="section-label">Último Treino</div>
       <div id="ultimoTreino">
         <div class="empty-state small">
@@ -172,7 +156,6 @@
     <!-- ══════ HOME — PERSONAL ══════ -->
     <div id="homePersonal" class="hidden">
       <div class="section-label">Painel do Personal 💪</div>
-
       <div class="stats-grid">
         <div class="stat-card blue">
           <span class="s-icon">👥</span>
@@ -195,8 +178,6 @@
           <div class="s-value red" id="statInativos">0</div>
         </div>
       </div>
-
-      <!-- Lista de Alunos -->
       <div class="section-label">Meus Alunos</div>
       <div id="listaAlunosPersonal">
         <div class="empty-state">
@@ -208,9 +189,8 @@
         </div>
       </div>
     </div>
-  </div>
 
-      <!-- ══════ TELA: FICHAS ══════ -->
+    <!-- ══════ TELA: FICHAS ══════ -->
     <div id="telaFichas" class="tela hidden">
       <div class="section-label">Minhas Fichas de Treino</div>
       <button class="action-btn-full" onclick="abrirCriarFicha()">
@@ -240,24 +220,21 @@
       </div>
     </div>
 
+  </div><!-- fim .container -->
 
-  <!-- ══════ NAV BAR (BOTTOM) ══════ -->
+  <!-- ══════ NAV BAR ══════ -->
   <nav class="bottom-nav" id="bottomNav">
     <button class="nav-btn active" onclick="navegarPara('home')" id="navHome">
-      <i class="fas fa-home"></i>
-      <span>Início</span>
+      <i class="fas fa-home"></i><span>Início</span>
     </button>
     <button class="nav-btn" onclick="navegarPara('fichas')" id="navFichas">
-      <i class="fas fa-clipboard-list"></i>
-      <span>Fichas</span>
+      <i class="fas fa-clipboard-list"></i><span>Fichas</span>
     </button>
     <button class="nav-btn" onclick="navegarPara('historico')" id="navHistorico">
-      <i class="fas fa-history"></i>
-      <span>Histórico</span>
+      <i class="fas fa-history"></i><span>Histórico</span>
     </button>
     <button class="nav-btn" onclick="navegarPara('perfil')" id="navPerfil">
-      <i class="fas fa-user"></i>
-      <span>Perfil</span>
+      <i class="fas fa-user"></i><span>Perfil</span>
     </button>
   </nav>
 </div>
@@ -340,13 +317,11 @@
           <option value="geral">Geral</option>
         </select>
       </div>
-
       <div class="section-label" style="margin-top:24px;">Divisões do Treino</div>
       <div id="divisoesList"></div>
       <button class="action-btn" onclick="adicionarDivisao()" style="margin-top:12px; width:100%; justify-content:center;">
         <i class="fas fa-plus"></i> Adicionar Divisão (A, B, C...)
       </button>
-
       <button class="submit-btn" onclick="salvarFicha()" style="margin-top:24px;" id="btnSalvarFicha">
         <i class="fas fa-save"></i> Salvar Ficha
       </button>
@@ -361,12 +336,9 @@
     <button class="modal-close" onclick="fecharExercicioModal()">✕</button>
   </div>
   <div class="modal-body">
-    <!-- Busca -->
     <div class="search-wrap" style="margin-bottom:16px;">
       <input type="text" id="buscaExercicio" class="form-field" placeholder="Buscar exercício..." oninput="filtrarExercicios()">
     </div>
-
-    <!-- Filtro por grupo -->
     <div class="filtro-row" id="filtroGrupo" style="margin-bottom:16px; flex-wrap:wrap;">
       <button class="filtro-btn active" onclick="filtrarGrupo('todos', this)">Todos</button>
       <button class="filtro-btn" onclick="filtrarGrupo('peito', this)">Peito</button>
@@ -379,10 +351,7 @@
       <button class="filtro-btn" onclick="filtrarGrupo('abdomen', this)">Abdômen</button>
       <button class="filtro-btn" onclick="filtrarGrupo('cardio', this)">Cardio</button>
     </div>
-
     <div id="listaExerciciosBiblioteca"></div>
-
-    <!-- Exercício customizado -->
     <div class="section-label" style="margin-top:24px;">Não encontrou? Crie o seu</div>
     <div class="form-card" style="padding:16px;">
       <input type="text" id="exCustomNome" class="form-field" placeholder="Nome do exercício" style="margin-bottom:8px;">
@@ -404,7 +373,7 @@
   </div>
 </div>
 
-<!-- ══════════════ MODAL: CONFIG EXERCÍCIO (séries/reps/carga) ══════════════ -->
+<!-- ══════════════ MODAL: CONFIG EXERCÍCIO ══════════════ -->
 <div class="modal-full" id="configExModal" style="z-index:6500;">
   <div class="modal-bar">
     <h2><i class="fas fa-sliders-h"></i> Configurar Exercício</h2>
@@ -415,7 +384,6 @@
       <div class="config-ex-icon" id="configExIcon">🏋️</div>
       <h3 class="config-ex-nome" id="configExNome">Exercício</h3>
       <p class="config-ex-grupo" id="configExGrupo">Grupo</p>
-
       <div class="config-grid">
         <div class="config-item">
           <label class="form-label">Séries</label>
@@ -450,12 +418,10 @@
           </div>
         </div>
       </div>
-
       <div class="form-group" style="margin-top:16px;">
         <label class="form-label">Observações</label>
         <input type="text" id="cfgObs" class="form-field" placeholder="Ex: Pegar leve, focar na descida...">
       </div>
-
       <button class="submit-btn" onclick="confirmarExercicio()">
         <i class="fas fa-check"></i> Confirmar
       </button>
@@ -470,7 +436,6 @@
     <button class="modal-close" onclick="confirmarSairTreino()">✕</button>
   </div>
   <div class="modal-body" style="padding-bottom:120px;">
-    <!-- Timer flutuante -->
     <div id="timerBar" class="timer-bar hidden">
       <div class="timer-icon">⏱️</div>
       <div class="timer-text">
@@ -479,18 +444,13 @@
       </div>
       <button class="timer-skip" onclick="pularTimer()">Pular</button>
     </div>
-
-    <!-- Cronômetro do treino -->
     <div class="treino-crono">
       <div class="crono-icon">🔥</div>
       <div class="crono-tempo" id="cronoTempo">00:00</div>
       <div class="crono-label">Tempo de treino</div>
     </div>
-
     <div id="treinoExercicios"></div>
   </div>
-
-  <!-- Barra fixa inferior -->
   <div class="treino-footer">
     <div class="treino-progress">
       <div class="treino-progress-bar" id="treinoProgressBar" style="width:0%"></div>
@@ -518,7 +478,6 @@
   </div>
 </div>
 
-  
 <!-- ══════════════ OVERLAYS ══════════════ -->
 <div class="success-overlay" id="successOverlay">
   <div class="success-icon" id="successIcon">✅</div>
