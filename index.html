@@ -5,12 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#000000">
 <link rel="manifest" href="manifest.json">
-<title>MoviFit</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<title>Estoque Digital — CRV/LAS</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,631 +18,126 @@
   <div class="orb"></div><div class="orb"></div><div class="orb"></div>
 </div>
 
-<!-- ══════════════ LOADING ══════════════ -->
-<div id="ldScreen">
-  <div class="ld-logo">🏋️</div>
-  <div class="ld-spinner"></div>
-  <div class="ld-text" id="ldText">Carregando...</div>
-</div>
-
-<!-- ══════════════ AUTH ══════════════ -->
-<div id="authScreen" class="hidden">
-  <div class="auth-card">
-    <div class="brand-icon">🏋️</div>
-    <h2>MoviFit</h2>
-    <p class="sub">Seu treino inteligente</p>
-
-    <div id="loginForm">
-      <input type="email" id="loginEmail" class="auth-field" placeholder="E-mail" autocomplete="email">
-      <div class="auth-pass-wrap">
-        <input type="password" id="loginPass" class="auth-field" placeholder="Senha" autocomplete="current-password">
-        <button type="button" class="eye-btn" onclick="toggleSenha('loginPass','loginEye')"><span id="loginEye">👁️</span></button>
-      </div>
-      <button class="auth-btn" id="loginBtn" onclick="fazerLogin()">
-        <i class="fas fa-sign-in-alt"></i> Entrar
-      </button>
-      <div class="auth-divider"><span>ou</span></div>
-      <button class="auth-btn google" onclick="loginGoogle()">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt="G">
-        Entrar com Google
-      </button>
-      <p class="auth-link">Não tem conta? <a href="#" onclick="mostrarCadastro(); return false;">Criar conta</a></p>
+<!-- ══════════════ LOGIN ══════════════ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="brand-icon">📦</div>
+    <h2>Estoque Digital</h2>
+    <p class="sub">CRV/LAS — Controle de Estoque</p>
+    <select id="loginUser" class="login-field">
+      <option value="">Selecione o seu nome</option>
+      <option value="LUCAS">Lucas</option>
+      <option value="TASSIO">Tassio</option>
+      <option value="AMARAL">Amaral</option>
+      <option value="ALEX">Alex</option>
+      <option value="LUIZ">Luiz</option> <!-- -->
+      <option value="GESTOR">Gestor (Alef)</option>
+    </select>
+    <div style="position:relative; margin-bottom:14px;">
+      <input type="password" id="loginPass" class="login-field" placeholder="Sua senha" autocomplete="off">
     </div>
-
-    <div id="cadastroForm" class="hidden">
-      <input type="text" id="cadNome" class="auth-field" placeholder="Seu nome completo">
-      <input type="email" id="cadEmail" class="auth-field" placeholder="E-mail" autocomplete="email">
-      <div class="auth-pass-wrap">
-        <input type="password" id="cadPass" class="auth-field" placeholder="Senha (mínimo 6 caracteres)" autocomplete="new-password">
-        <button type="button" class="eye-btn" onclick="toggleSenha('cadPass','cadEye')"><span id="cadEye">👁️</span></button>
-      </div>
-      <input type="password" id="cadPass2" class="auth-field" placeholder="Confirmar senha" autocomplete="new-password">
-      <div class="tipo-selector">
-        <div class="tipo-label">Eu sou:</div>
-        <div class="tipo-options">
-          <button class="tipo-btn active" onclick="selecionarTipo(this,'aluno')" id="tipoAluno">
-            <i class="fas fa-dumbbell"></i> Aluno
-          </button>
-          <button class="tipo-btn" onclick="selecionarTipo(this,'personal')" id="tipoPersonal">
-            <i class="fas fa-clipboard-list"></i> Personal
-          </button>
-        </div>
-      </div>
-      <div class="lgpd-wrap">
-        <input type="checkbox" id="lgpdCheck">
-        <label for="lgpdCheck">Declaro que li e concordo com a recolha de dados estritamente para fins de uso do app e melhoria da experiência, conforme a <strong>LGPD</strong> (Lei nº 13.709/2018).</label>
-      </div>
-      <button class="auth-btn" id="cadBtn" onclick="fazerCadastro()">
-        <i class="fas fa-user-plus"></i> Criar Conta
-      </button>
-      <p class="auth-link">Já tem conta? <a href="#" onclick="mostrarLogin(); return false;">Entrar</a></p>
+    <div class="lgpd-row">
+      <input type="checkbox" id="lgpdCheck">
+      <label for="lgpdCheck">Declaro que li e concordo com a recolha de dados conforme a <strong>LGPD</strong>.</label>
     </div>
-
-    <div class="auth-error" id="authError"></div>
+    <button class="login-btn" id="loginBtn" onclick="fazerLogin()">Entrar</button>
+    <div class="login-error" id="loginError"></div>
   </div>
 </div>
+
+<div id="ldScreen" class="hidden"><div class="ld-spinner"></div><div class="ld-text" id="ldText">Sincronizando...</div></div>
 
 <!-- ══════════════ MAIN APP ══════════════ -->
-<div id="mainApp" class="hidden">
-
+<div id="mainApp" style="display:none;">
   <div class="top-bar">
     <div class="top-bar-row1">
-      <div class="brand">
-        <div class="brand-dot">🏋️</div>
-        <div class="brand-text">
-          <h1>MoviFit</h1>
-          <span id="topBarSub">Aluno</span>
-        </div>
-      </div>
-      <div class="top-bar-actions">
-        <button class="top-btn" onclick="abrirPerfil()" id="btnPerfil">
-          <i class="fas fa-user-circle"></i>
-        </button>
-      </div>
+      <div class="brand"><div class="brand-dot">📦</div><div class="brand-text"><h1>Estoque Digital</h1><span>CRV/LAS</span></div></div>
+      <button class="btn-logout" onclick="logout()">Sair</button>
     </div>
     <div class="top-bar-row2">
-      <span class="user-badge" id="userBadge">Usuário</span>
-      <span class="badge badge-tipo" id="badgeTipo">Aluno</span>
+      <span class="badge badge-online" id="badgeStatus">Online</span>
+      <span class="user-badge" id="userBadge"></span>
     </div>
   </div>
 
-  <!-- Container Principal -->
   <div class="container">
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab('painel')" id="tabPainel">Painel</button>
+      <button class="tab-btn" onclick="switchTab('entrada')" id="tabEntrada">Entrada</button>
+      <button class="tab-btn" onclick="switchTab('saida')" id="tabSaida">Saída</button>
+      <button class="tab-btn" onclick="switchTab('auditoria')" id="tabAuditoria">Auditoria</button>
+    </div>
 
-<!-- ══════════════ HOME — ALUNO ══════════════ -->
-<div id="homeAluno">
-  <div class="section-label">Resumo</div>
-  <div class="stats-grid">
-    <div class="stat-card orange">
-      <div class="stat-icon"><i class="fas fa-fire"></i></div>
-      <div class="stat-value" id="statSequencia">0</div>
-      <div class="stat-label">Sequência</div>
-    </div>
-    <div class="stat-card blue">
-      <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
-      <div class="stat-value" id="statSemana">0</div>
-      <div class="stat-label">Esta Semana</div>
-    </div>
-    <div class="stat-card green">
-      <div class="stat-icon"><i class="fas fa-dumbbell"></i></div>
-      <div class="stat-value" id="statTotal">0</div>
-      <div class="stat-label">Total Treinos</div>
-    </div>
-    <div class="stat-card purple">
-      <div class="stat-icon"><i class="fas fa-clock"></i></div>
-      <div class="stat-value" id="statTempo">0<span class="stat-unit">min</span></div>
-      <div class="stat-label">Tempo Total</div>
-    </div>
-  </div>
-
-  <div class="section-label" style="margin-top:24px;">Treino de Hoje</div>
-  <div id="treinoHoje">
-    <div class="empty-state">
-      <div class="empty-icon">🏋️</div>
-      <div class="empty-text">Nenhuma ficha ativa</div>
-      <button class="action-btn" onclick="navegarPara('fichas')"><i class="fas fa-plus"></i> Criar Primeira Ficha</button>
-    </div>
-  </div>
-
-  <div class="section-label" style="margin-top:24px;">Último Treino</div>
-  <div id="ultimoTreino">
-    <div class="empty-state small">
-      <div class="empty-text" style="font-size:.82rem;">Nenhum treino registrado ainda</div>
-    </div>
-  </div>
-
-  <div class="section-label" style="margin-top:24px;">Meu Personal</div>
-  <div id="meuPersonalHome">
-    <div class="empty-state small">
-      <div class="empty-text" style="font-size:.82rem;">Sem personal vinculado</div>
-      <button class="action-btn" onclick="abrirCodigoModal()"><i class="fas fa-link"></i> Vincular Personal</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ HOME — PERSONAL ══════════════ -->
-    <div id="homePersonal" class="hidden">
-      <div class="section-label">Painel do Personal 💪</div>
+    <!-- PAINEL -->
+    <div class="tab-content active" id="contentPainel">
       <div class="stats-grid">
-        <div class="stat-card blue">
-          <span class="s-icon">👥</span>
-          <div class="s-label">Meus Alunos</div>
-          <div class="s-value blue" id="statAlunos">0</div>
-        </div>
-        <div class="stat-card green">
-          <span class="s-icon">📋</span>
-          <div class="s-label">Fichas Ativas</div>
-          <div class="s-value green" id="statFichas">0</div>
-        </div>
-        <div class="stat-card orange">
-          <span class="s-icon">🔥</span>
-          <div class="s-label">Treinaram Hoje</div>
-          <div class="s-value orange" id="statTreinaHoje">0</div>
-        </div>
-        <div class="stat-card red">
-          <span class="s-icon">⚠️</span>
-          <div class="s-label">Inativos (+3d)</div>
-          <div class="s-value red" id="statInativos">0</div>
-        </div>
+        <div class="stat-card blue"><div class="s-label">Total</div><div class="s-value" id="statTotal">0</div></div>
+        <div class="stat-card red"><div class="s-label">Vencidos</div><div class="s-value" id="statVencidos">0</div></div>
       </div>
-      <div class="section-label">Meus Alunos</div>
-      <div id="listaAlunosPersonal">
-        <div class="empty-state">
-          <div class="empty-icon">👥</div>
-          <div class="empty-text">Nenhum aluno vinculado</div>
-          <button class="action-btn" onclick="abrirVincularAluno()">
-            <i class="fas fa-user-plus"></i> Vincular Aluno
-          </button>
-        </div>
+      <div class="relatorio-switch-row">
+        <span>Relatório de Impressão</span>
+        <div class="apple-switch" id="switchRelatorio" onclick="toggleRelatorio()"><div class="apple-switch-track"><div class="apple-switch-thumb"></div></div></div>
       </div>
+      <div id="produtosList"></div>
     </div>
 
-    <!-- ══════ TELA: FICHAS ══════ -->
-    <div id="telaFichas" class="tela hidden">
-      <div class="section-label">Minhas Fichas de Treino</div>
-      <button class="action-btn-full" onclick="abrirCriarFicha()">
-        <i class="fas fa-plus"></i> Nova Ficha de Treino
-      </button>
-      <div id="listaFichas" style="margin-top:16px;">
-        <div class="empty-state">
-          <div class="empty-icon">📋</div>
-          <div class="empty-text">Nenhuma ficha criada ainda</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══════ TELA: HISTÓRICO ══════ -->
-    <div id="telaHistorico" class="tela hidden">
-      <div class="section-label">Histórico de Treinos</div>
-      <div id="filtroHistorico" class="filtro-row">
-        <button class="filtro-btn active" onclick="filtrarHistorico('todos', this)">Todos</button>
-        <button class="filtro-btn" onclick="filtrarHistorico('semana', this)">Semana</button>
-        <button class="filtro-btn" onclick="filtrarHistorico('mes', this)">Mês</button>
-      </div>
-      <div id="listaHistorico">
-        <div class="empty-state">
-          <div class="empty-icon">📊</div>
-          <div class="empty-text">Nenhum treino registrado ainda</div>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- fim .container -->
-
-  <!-- ══════ NAV BAR ══════ -->
-  <nav class="bottom-nav" id="bottomNav">
-    <button class="nav-btn active" onclick="navegarPara('home')" id="navHome">
-      <i class="fas fa-home"></i><span>Início</span>
-    </button>
-    <button class="nav-btn" onclick="navegarPara('fichas')" id="navFichas">
-      <i class="fas fa-clipboard-list"></i><span>Fichas</span>
-    </button>
-    <button class="nav-btn" onclick="navegarPara('historico')" id="navHistorico">
-      <i class="fas fa-history"></i><span>Histórico</span>
-    </button>
-    <button class="nav-btn" onclick="navegarPara('perfil')" id="navPerfil">
-      <i class="fas fa-user"></i><span>Perfil</span>
-    </button>
-  </nav>
-</div>
-
-<!-- ══════════════ MODAL PERFIL ══════════════ -->
-<div class="modal-full" id="perfilModal">
-  <div class="modal-bar">
-    <h2><i class="fas fa-user-circle"></i> Meu Perfil</h2>
-    <button class="modal-close" onclick="fecharPerfil()">✕</button>
-  </div>
-  <div class="modal-body" id="perfilBody">
-    <div class="form-card">
-      <div class="perfil-avatar" id="perfilAvatar">🏋️</div>
-      <div class="form-group">
-        <label class="form-label">Nome</label>
-        <input type="text" id="perfilNome" class="form-field" placeholder="Seu nome">
-      </div>
-      <div class="form-group">
-        <label class="form-label">E-mail</label>
-        <input type="email" id="perfilEmail" class="form-field" disabled>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Tipo de Conta</label>
-        <input type="text" id="perfilTipo" class="form-field" disabled>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Idade</label>
-        <input type="number" id="perfilIdade" class="form-field" placeholder="Sua idade">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Peso (kg)</label>
-        <input type="number" id="perfilPeso" class="form-field" placeholder="Ex: 75" step="0.1">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Altura (cm)</label>
-        <input type="number" id="perfilAltura" class="form-field" placeholder="Ex: 175">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Objetivo</label>
-        <select id="perfilObjetivo" class="form-field">
-          <option value="">Selecione</option>
-          <option value="hipertrofia">Hipertrofia</option>
-          <option value="emagrecimento">Emagrecimento</option>
-          <option value="resistencia">Resistência</option>
-          <option value="forca">Força</option>
-          <option value="saude">Saúde e Bem-estar</option>
-          <option value="reabilitacao">Reabilitação</option>
-        </select>
-      </div>
-      <button class="submit-btn" onclick="salvarPerfil()">
-        <i class="fas fa-save"></i> Salvar Perfil
-      </button>
-      <button class="submit-btn logout-btn" onclick="fazerLogout()" style="background:var(--red); margin-top:12px;">
-        <i class="fas fa-sign-out-alt"></i> Sair da Conta
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ MODAL: CRIAR/EDITAR FICHA ══════════════ -->
-<div class="modal-full" id="fichaModal">
-  <div class="modal-bar">
-    <h2><i class="fas fa-clipboard-list"></i> <span id="fichaModalTitulo">Nova Ficha</span></h2>
-    <button class="modal-close" onclick="fecharFichaModal()">✕</button>
-  </div>
-  <div class="modal-body">
-    <div class="form-card">
-      <input type="hidden" id="fichaEditId" value="">
-      <div class="form-group">
-        <label class="form-label">Nome da Ficha</label>
-        <input type="text" id="fichaNome" class="form-field" placeholder="Ex: Treino Hipertrofia">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Objetivo</label>
-        <select id="fichaObjetivo" class="form-field">
-          <option value="hipertrofia">Hipertrofia</option>
-          <option value="forca">Força</option>
-          <option value="resistencia">Resistência</option>
-          <option value="emagrecimento">Emagrecimento</option>
-          <option value="geral">Geral</option>
-        </select>
-      </div>
-      <div class="section-label" style="margin-top:24px;">Divisões do Treino</div>
-      <div id="divisoesList"></div>
-      <button class="action-btn" onclick="adicionarDivisao()" style="margin-top:12px; width:100%; justify-content:center;">
-        <i class="fas fa-plus"></i> Adicionar Divisão (A, B, C...)
-      </button>
-      <button class="submit-btn" onclick="salvarFicha()" style="margin-top:24px;" id="btnSalvarFicha">
-        <i class="fas fa-save"></i> Salvar Ficha
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ MODAL: ADICIONAR EXERCÍCIO ══════════════ -->
-<div class="modal-full" id="exercicioModal" style="z-index:6000;">
-  <div class="modal-bar">
-    <h2><i class="fas fa-dumbbell"></i> Adicionar Exercício</h2>
-    <button class="modal-close" onclick="fecharExercicioModal()">✕</button>
-  </div>
-  <div class="modal-body">
-    <div class="search-wrap" style="margin-bottom:16px;">
-      <input type="text" id="buscaExercicio" class="form-field" placeholder="Buscar exercício..." oninput="filtrarExercicios()">
-    </div>
-    <div class="filtro-row" id="filtroGrupo" style="margin-bottom:16px; flex-wrap:wrap;">
-      <button class="filtro-btn active" onclick="filtrarGrupo('todos', this)">Todos</button>
-      <button class="filtro-btn" onclick="filtrarGrupo('peito', this)">Peito</button>
-      <button class="filtro-btn" onclick="filtrarGrupo('costas', this)">Costas</button>
-      <button class="filtro-btn" onclick="filtrarGrupo('ombros', this)">Ombros</button>
-      <button class="filtro-btn" onclick="filtrarGrupo('biceps', this)">Bíceps</button>
-      <button class="filtro-btn" onclick="filtrarGrupo('triceps', this)">Tríceps</button>
-      <button class="filtro-btn" onclick="filtrarGrupo('pernas', this)">Pernas</button>
-      <button class="filtro-btn" onclick="filtrarGrupo('gluteos', this)">Glúteos</button>
-      <button class="filtro-btn" onclick="filtrarGrupo('abdomen', this)">Abdômen</button>
-      <button class="filtro-btn" onclick="filtrarGrupo('cardio', this)">Cardio</button>
-    </div>
-    <div id="listaExerciciosBiblioteca"></div>
-    <div class="section-label" style="margin-top:24px;">Não encontrou? Crie o seu</div>
-    <div class="form-card" style="padding:16px;">
-      <input type="text" id="exCustomNome" class="form-field" placeholder="Nome do exercício" style="margin-bottom:8px;">
-      <select id="exCustomGrupo" class="form-field" style="margin-bottom:8px;">
-        <option value="peito">Peito</option>
-        <option value="costas">Costas</option>
-        <option value="ombros">Ombros</option>
-        <option value="biceps">Bíceps</option>
-        <option value="triceps">Tríceps</option>
-        <option value="pernas">Pernas</option>
-        <option value="gluteos">Glúteos</option>
-        <option value="abdomen">Abdômen</option>
-        <option value="cardio">Cardio</option>
-      </select>
-      <button class="action-btn" onclick="adicionarExCustom()" style="width:100%; justify-content:center;">
-        <i class="fas fa-plus"></i> Criar e Adicionar
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ MODAL: CONFIG EXERCÍCIO ══════════════ -->
-<div class="modal-full" id="configExModal" style="z-index:6500;">
-  <div class="modal-bar">
-    <h2><i class="fas fa-sliders-h"></i> Configurar Exercício</h2>
-    <button class="modal-close" onclick="fecharConfigEx()">✕</button>
-  </div>
-  <div class="modal-body">
-    <div class="form-card" style="text-align:center;">
-      <div class="config-ex-icon" id="configExIcon">🏋️</div>
-      <h3 class="config-ex-nome" id="configExNome">Exercício</h3>
-      <p class="config-ex-grupo" id="configExGrupo">Grupo</p>
-      <div class="config-grid">
-        <div class="config-item">
-          <label class="form-label">Séries</label>
-          <div class="stepper">
-            <button class="stepper-btn" onclick="stepperChange('cfgSeries', -1)">−</button>
-            <input type="number" id="cfgSeries" class="stepper-input" value="3" min="1" max="20">
-            <button class="stepper-btn" onclick="stepperChange('cfgSeries', 1)">+</button>
+    <!-- ENTRADA -->
+    <div class="tab-content" id="contentEntrada">
+      <div class="ios-card">
+        <div class="ios-card-row" style="flex-direction:column;">
+          <div style="display:flex; justify-content:space-between; width:100%;">
+            <span>Código de Barras</span>
+            <button class="cam-btn primary" onclick="iniciarScannerEntrada()" style="width:auto; margin:0; padding:6px 12px;">📷 Bipar</button>
           </div>
+          <input type="text" id="entCodigoBarras" class="form-field" style="margin-top:8px;">
         </div>
-        <div class="config-item">
-          <label class="form-label">Repetições</label>
-          <div class="stepper">
-            <button class="stepper-btn" onclick="stepperChange('cfgReps', -1)">−</button>
-            <input type="number" id="cfgReps" class="stepper-input" value="12" min="1" max="100">
-            <button class="stepper-btn" onclick="stepperChange('cfgReps', 1)">+</button>
-          </div>
-        </div>
-        <div class="config-item">
-          <label class="form-label">Carga (kg)</label>
-          <div class="stepper">
-            <button class="stepper-btn" onclick="stepperChange('cfgCarga', -2.5)">−</button>
-            <input type="number" id="cfgCarga" class="stepper-input" value="0" min="0" max="500" step="0.5">
-            <button class="stepper-btn" onclick="stepperChange('cfgCarga', 2.5)">+</button>
-          </div>
-        </div>
-        <div class="config-item">
-          <label class="form-label">Descanso (seg)</label>
-          <div class="stepper">
-            <button class="stepper-btn" onclick="stepperChange('cfgDescanso', -15)">−</button>
-            <input type="number" id="cfgDescanso" class="stepper-input" value="60" min="0" max="600" step="15">
-            <button class="stepper-btn" onclick="stepperChange('cfgDescanso', 15)">+</button>
+        <div id="scannerEntradaArea" style="display:none; padding:10px;"><div id="readerEntrada"></div></div>
+        <div class="ios-card-row"><span>Setor</span><select id="entSetor" class="form-field"></select></div>
+        <div class="ios-card-row"><span>Produto *</span><input type="text" id="entProduto" class="form-field"></div>
+        <div class="ios-card-row"><span>Quantidade *</span><input type="number" id="entQtd" class="form-field"></div>
+        <div class="ios-card-row"><span>Validade</span><input type="date" id="entValidade" class="form-field"></div>
+        
+        <!-- FOTO BLINDADA -->
+        <div class="section-label">Identificação Visual</div>
+        <div class="ios-card" style="padding:16px;">
+          <button id="btnRevelarCamera" class="cam-btn" onclick="mostrarCameraEntrada()">📷 Adicionar Foto</button>
+          <div id="areaCameraEntrada" style="display:none;">
+            <div class="foto-preview-container"><video id="fotoVideo" autoplay playsinline></video><canvas id="fotoCanvas" style="display:none;"></canvas></div>
+            <button class="submit-btn" id="btnFotoCapture" onclick="capturarFoto()" style="margin-top:10px;">📸 Capturar</button>
           </div>
         </div>
       </div>
-      <div class="form-group" style="margin-top:16px;">
-        <label class="form-label">Observações</label>
-        <input type="text" id="cfgObs" class="form-field" placeholder="Ex: Pegar leve, focar na descida...">
+      <button class="submit-btn" onclick="enviarEntrada()">Salvar Entrada</button>
+    </div>
+
+    <!-- SAÍDA -->
+    <div class="tab-content" id="contentSaida">
+      <div class="ios-card">
+        <div class="ios-card-row" style="display:flex; gap:10px;">
+          <input type="text" id="saidaSearch" class="form-field" placeholder="Buscar..." style="flex:1;">
+          <button class="cam-btn primary" onclick="iniciarScannerSaida()" style="width:auto; margin:0;">📷 Bipar</button>
+        </div>
       </div>
-      <button class="submit-btn" onclick="confirmarExercicio()">
-        <i class="fas fa-check"></i> Confirmar
-      </button>
+      <div id="carrinhoArea" style="display:none;" class="ios-card">
+        <div id="cartList"></div>
+        <div style="padding:16px;">
+          <label>Motivo da Saída</label>
+          <select id="loteMotivoSelect" class="form-field">
+            <option value="PEDIDO">📦 Saída de Pedido</option>
+            <option value="CONSUMO">🏢 Consumo Interno</option>
+            <option value="AVARIA">⚠️ Avaria / Perda</option>
+            <option value="VENCIDO">❌ Vencimento</option> <!--[cite: 5] -->
+          </select>
+          <button class="submit-btn" onclick="confirmarSaidaLote()" style="background:var(--orange)!important; margin-top:15px;">Confirmar Baixa</button>
+        </div>
+      </div>
+      <div id="saidaList"></div>
     </div>
   </div>
 </div>
 
-<!-- ══════════════ MODAL: EXECUÇÃO DO TREINO ══════════════ -->
-<div class="modal-full" id="treinoModal" style="z-index:7000;">
-  <div class="modal-bar">
-    <h2><i class="fas fa-play-circle"></i> <span id="treinoModalTitulo">Treino A</span></h2>
-    <button class="modal-close" onclick="confirmarSairTreino()">✕</button>
-  </div>
-  <div class="modal-body" style="padding-bottom:120px;">
-    <div id="timerBar" class="timer-bar hidden">
-      <div class="timer-icon">⏱️</div>
-      <div class="timer-text">
-        <div class="timer-label">Descanso</div>
-        <div class="timer-value" id="timerValue">60</div>
-      </div>
-      <button class="timer-skip" onclick="pularTimer()">Pular</button>
-    </div>
-    <div class="treino-crono">
-      <div class="crono-icon">🔥</div>
-      <div class="crono-tempo" id="cronoTempo">00:00</div>
-      <div class="crono-label">Tempo de treino</div>
-    </div>
-    <div id="treinoExercicios"></div>
-  </div>
-  <div class="treino-footer">
-    <div class="treino-progress">
-      <div class="treino-progress-bar" id="treinoProgressBar" style="width:0%"></div>
-    </div>
-    <div class="treino-footer-info">
-      <span id="treinoProgressText">0/0 exercícios</span>
-      <button class="submit-btn" onclick="finalizarTreino()" id="btnFinalizarTreino" style="max-width:200px; padding:12px 20px; font-size:.85rem;">
-        <i class="fas fa-flag-checkered"></i> Finalizar
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ MODAL: RESUMO PÓS-TREINO ══════════════ -->
-<div class="modal-full" id="resumoModal" style="z-index:7500;">
-  <div class="modal-body" style="padding-top:60px;">
-    <div class="resumo-card">
-      <div class="resumo-icon">🏆</div>
-      <h2 class="resumo-titulo">Treino Concluído!</h2>
-      <div class="resumo-grid" id="resumoGrid"></div>
-      <button class="submit-btn" onclick="fecharResumo()" style="margin-top:24px;">
-        <i class="fas fa-home"></i> Voltar ao Início
-      </button>
-    </div>
-  </div>
-</div>
-
-  <!-- ══════════════ MODAL: VINCULAR ALUNO (Personal gera código) ══════════════ -->
-<div class="modal-full" id="vincularModal">
-  <div class="modal-bar">
-    <h2><i class="fas fa-user-plus"></i> Vincular Aluno</h2>
-    <button class="modal-close" onclick="fecharVincularModal()">✕</button>
-  </div>
-  <div class="modal-body">
-    <div class="form-card" style="text-align:center;">
-      <div style="font-size:3rem; margin-bottom:12px;">🔗</div>
-      <h3 style="color:var(--text-white); margin-bottom:8px;">Código de Vinculação</h3>
-      <p style="color:var(--text-tertiary); font-size:.82rem; margin-bottom:24px;">
-        Compartilhe este código com seu aluno.<br>Ele deve inserir no app para se vincular a você.
-      </p>
-
-      <div id="codigoVinculo" class="codigo-display">
-        <span class="codigo-text" id="codigoText">------</span>
-        <button class="codigo-copy" onclick="copiarCodigo()"><i class="fas fa-copy"></i></button>
-      </div>
-
-      <button class="submit-btn" onclick="gerarNovoCodigo()" style="margin-top:16px;">
-        <i class="fas fa-sync-alt"></i> Gerar Novo Código
-      </button>
-
-      <div class="section-label" style="margin-top:32px;">Ou vincular por e-mail</div>
-      <input type="email" id="vincularEmail" class="form-field" placeholder="E-mail do aluno" style="margin-bottom:12px;">
-      <button class="submit-btn" onclick="vincularPorEmail()" style="background:var(--blue); box-shadow:0 4px 16px rgba(10,132,255,.2);">
-        <i class="fas fa-envelope"></i> Enviar Convite
-      </button>
-    </div>
-
-    <!-- Solicitações pendentes -->
-    <div class="section-label" style="margin-top:24px;">Solicitações Pendentes</div>
-    <div id="listaSolicitacoes">
-      <div class="empty-state small">
-        <div class="empty-text" style="font-size:.8rem;">Nenhuma solicitação pendente</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ MODAL: INSERIR CÓDIGO (Aluno se vincula) ══════════════ -->
-<div class="modal-full" id="codigoModal">
-  <div class="modal-bar">
-    <h2><i class="fas fa-link"></i> Vincular Personal</h2>
-    <button class="modal-close" onclick="fecharCodigoModal()">✕</button>
-  </div>
-  <div class="modal-body">
-    <div class="form-card" style="text-align:center;">
-      <div style="font-size:3rem; margin-bottom:12px;">🏋️</div>
-      <h3 style="color:var(--text-white); margin-bottom:8px;">Tem um Personal?</h3>
-      <p style="color:var(--text-tertiary); font-size:.82rem; margin-bottom:24px;">
-        Insira o código que seu personal compartilhou com você.
-      </p>
-
-      <div id="codigoForm">
-        <input type="text" id="inputCodigo" class="form-field codigo-input" placeholder="Ex: ABC123" maxlength="6">
-        <div id="codigoErro" style="color:var(--red); font-size:.78rem; margin-top:8px;"></div>
-        <button class="submit-btn" onclick="enviarCodigo()" id="btnEnviarCodigo" style="margin-top:16px;">
-          <i class="fas fa-paper-plane"></i> Enviar Solicitação
-        </button>
-      </div>
-
-      <div id="codigoSucesso" class="hidden" style="margin-top:20px;">
-        <div style="font-size:2rem; margin-bottom:8px;">✅</div>
-        <p style="color:var(--green); font-weight:600;">Solicitação enviada!</p>
-        <p style="color:var(--text-tertiary); font-size:.78rem; margin-top:4px;">Aguardando aprovação de <strong id="personalNomeSucesso"></strong></p>
-      </div>
-    </div>
-
-    <div class="section-label" style="margin-top:24px;">Meu Personal</div>
-    <div id="meuPersonal">
-      <div class="empty-state small">
-        <div class="empty-text" style="font-size:.8rem;">Nenhum personal vinculado</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<!-- ══════════════ MODAL: DETALHE DO ALUNO (Personal vê) ══════════════ -->
-<div class="modal-full" id="alunoDetalheModal" style="z-index:5500;">
-  <div class="modal-bar">
-    <h2><i class="fas fa-user"></i> <span id="alunoDetalheTitulo">Aluno</span></h2>
-    <button class="modal-close" onclick="fecharAlunoDetalhe()">✕</button>
-  </div>
-  <div class="modal-body">
-    <!-- Info do aluno -->
-    <div class="form-card" style="text-align:center; margin-bottom:16px;">
-      <div class="perfil-avatar" id="alunoDetalheAvatar" style="font-size:1.5rem; width:60px; height:60px;">??</div>
-      <h3 style="color:var(--text-white); margin-bottom:4px;" id="alunoDetalheNome">Nome</h3>
-      <p style="color:var(--text-tertiary); font-size:.8rem;" id="alunoDetalheMeta">Objetivo • Idade</p>
-    </div>
-
-    <!-- Stats do aluno -->
-    <div class="stats-grid" id="alunoDetalheStats">
-      <div class="stat-card orange">
-        <span class="s-icon">🔥</span>
-        <div class="s-label">Sequência</div>
-        <div class="s-value orange" id="alunoStatSeq">0</div>
-      </div>
-      <div class="stat-card blue">
-        <span class="s-icon">📅</span>
-        <div class="s-label">Esta Semana</div>
-        <div class="s-value blue" id="alunoStatSemana">0</div>
-      </div>
-      <div class="stat-card green">
-        <span class="s-icon">✅</span>
-        <div class="s-label">Total Treinos</div>
-        <div class="s-value green" id="alunoStatTotal">0</div>
-      </div>
-      <div class="stat-card purple">
-        <span class="s-icon">⏱️</span>
-        <div class="s-label">Tempo Total</div>
-        <div class="s-value purple" id="alunoStatTempo">0h</div>
-      </div>
-    </div>
-
-    <!-- Fichas do aluno -->
-    <div class="section-label" style="margin-top:24px;">Fichas do Aluno</div>
-    <button class="action-btn-full" onclick="criarFichaParaAluno()" style="margin-bottom:12px;">
-      <i class="fas fa-plus"></i> Criar Ficha para este Aluno
-    </button>
-    <div id="alunoDetalheFichas">
-      <div class="empty-state small">
-        <div class="empty-text" style="font-size:.8rem;">Nenhuma ficha criada</div>
-      </div>
-    </div>
-
-    <!-- Histórico recente -->
-    <div class="section-label" style="margin-top:24px;">Últimos Treinos</div>
-    <div id="alunoDetalheHistorico">
-      <div class="empty-state small">
-        <div class="empty-text" style="font-size:.8rem;">Nenhum treino registrado</div>
-      </div>
-    </div>
-
-    <!-- Ações -->
-    <button class="submit-btn" onclick="desvincularAluno()" style="background:var(--red); margin-top:24px; box-shadow:0 4px 16px rgba(255,69,58,.2);">
-      <i class="fas fa-unlink"></i> Desvincular Aluno
-    </button>
-  </div>
-</div>
-
-
-<!-- ══════════════ OVERLAYS ══════════════ -->
-<div class="success-overlay" id="successOverlay">
-  <div class="success-icon" id="successIcon">✅</div>
-  <div class="success-msg" id="successMsg">Sucesso!</div>
-  <div class="success-detail" id="successDetail"></div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<!-- ══════════════ FIREBASE SDK ══════════════ -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-
+<div id="relatorioOverlay" class="no-print"></div>
+<div class="success-overlay" id="successOverlay"></div>
 <script src="app.js"></script>
 </body>
 </html>
