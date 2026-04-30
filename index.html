@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.json">
+<title>MoviFit</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-scene">
+  <div class="orb"></div><div class="orb"></div><div class="orb"></div>
+</div>
+
+<!-- ══════════════ LOADING ══════════════ -->
+<div id="ldScreen">
+  <div class="ld-logo">🏋️</div>
+  <div class="ld-spinner"></div>
+  <div class="ld-text" id="ldText">Carregando...</div>
+</div>
+
+<!-- ══════════════ AUTH: LOGIN ══════════════ -->
+<div id="authScreen" class="hidden">
+  <div class="auth-card">
+    <div class="brand-icon">🏋️</div>
+    <h2>MoviFit</h2>
+    <p class="sub">Seu treino inteligente</p>
+
+    <!-- Login Form -->
+    <div id="loginForm">
+      <input type="email" id="loginEmail" class="auth-field" placeholder="E-mail" autocomplete="email">
+      <div class="auth-pass-wrap">
+        <input type="password" id="loginPass" class="auth-field" placeholder="Senha" autocomplete="current-password">
+        <button type="button" class="eye-btn" onclick="toggleSenha('loginPass','loginEye')"><span id="loginEye">👁️</span></button>
+      </div>
+      <button class="auth-btn" id="loginBtn" onclick="fazerLogin()">
+        <i class="fas fa-sign-in-alt"></i> Entrar
+      </button>
+      <div class="auth-divider"><span>ou</span></div>
+      <button class="auth-btn google" onclick="loginGoogle()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt="G">
+        Entrar com Google
+      </button>
+      <p class="auth-link">Não tem conta? <a href="#" onclick="mostrarCadastro(); return false;">Criar conta</a></p>
+    </div>
+
+    <!-- Cadastro Form -->
+    <div id="cadastroForm" class="hidden">
+      <input type="text" id="cadNome" class="auth-field" placeholder="Seu nome completo">
+      <input type="email" id="cadEmail" class="auth-field" placeholder="E-mail" autocomplete="email">
+      <div class="auth-pass-wrap">
+        <input type="password" id="cadPass" class="auth-field" placeholder="Senha (mínimo 6 caracteres)" autocomplete="new-password">
+        <button type="button" class="eye-btn" onclick="toggleSenha('cadPass','cadEye')"><span id="cadEye">👁️</span></button>
+      </div>
+      <input type="password" id="cadPass2" class="auth-field" placeholder="Confirmar senha" autocomplete="new-password">
+      <div class="tipo-selector">
+        <div class="tipo-label">Eu sou:</div>
+        <div class="tipo-options">
+          <button class="tipo-btn active" onclick="selecionarTipo(this,'aluno')" id="tipoAluno">
+            <i class="fas fa-dumbbell"></i> Aluno
+          </button>
+          <button class="tipo-btn" onclick="selecionarTipo(this,'personal')" id="tipoPersonal">
+            <i class="fas fa-clipboard-list"></i> Personal
+          </button>
+        </div>
+      </div>
+      <button class="auth-btn" id="cadBtn" onclick="fazerCadastro()">
+        <i class="fas fa-user-plus"></i> Criar Conta
+      </button>
+      <p class="auth-link">Já tem conta? <a href="#" onclick="mostrarLogin(); return false;">Entrar</a></p>
+    </div>
+
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
+
+<!-- ══════════════ MAIN APP ══════════════ -->
+<div id="mainApp" class="hidden">
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="top-bar-row1">
+      <div class="brand">
+        <div class="brand-dot">🏋️</div>
+        <div class="brand-text">
+          <h1>MoviFit</h1>
+          <span id="topBarSub">Aluno</span>
+        </div>
+      </div>
+      <div class="top-bar-actions">
+        <button class="top-btn" onclick="abrirPerfil()" id="btnPerfil">
+          <i class="fas fa-user-circle"></i>
+        </button>
+      </div>
+    </div>
+    <div class="top-bar-row2">
+      <span class="user-badge" id="userBadge">Usuário</span>
+      <span class="badge badge-tipo" id="badgeTipo">Aluno</span>
+    </div>
+  </div>
+
+  <!-- Container Principal -->
+  <div class="container">
+
+    <!-- ══════ HOME — ALUNO ══════ -->
+    <div id="homeAluno">
+      <div class="section-label">Olá, <span id="homeNome">Usuário</span> 👋</div>
+
+      <!-- Stats Rápidos -->
+      <div class="stats-grid">
+        <div class="stat-card orange">
+          <span class="s-icon">🔥</span>
+          <div class="s-label">Sequência</div>
+          <div class="s-value orange" id="statSequencia">0</div>
+        </div>
+        <div class="stat-card blue">
+          <span class="s-icon">📅</span>
+          <div class="s-label">Esta Semana</div>
+          <div class="s-value blue" id="statSemana">0</div>
+        </div>
+        <div class="stat-card green">
+          <span class="s-icon">✅</span>
+          <div class="s-label">Total Treinos</div>
+          <div class="s-value green" id="statTotal">0</div>
+        </div>
+        <div class="stat-card purple">
+          <span class="s-icon">⏱️</span>
+          <div class="s-label">Tempo Total</div>
+          <div class="s-value purple" id="statTempo">0h</div>
+        </div>
+      </div>
+
+      <!-- Treino de Hoje -->
+      <div class="section-label">Treino de Hoje</div>
+      <div id="treinoHoje" class="treino-hoje-card">
+        <div class="empty-state">
+          <div class="empty-icon">🏋️</div>
+          <div class="empty-text">Nenhuma ficha de treino ainda</div>
+          <button class="action-btn" onclick="navegarPara('fichas')">
+            <i class="fas fa-plus"></i> Criar Primeira Ficha
+          </button>
+        </div>
+      </div>
+
+      <!-- Último Treino -->
+      <div class="section-label">Último Treino</div>
+      <div id="ultimoTreino">
+        <div class="empty-state small">
+          <div class="empty-text" style="font-size:.82rem;">Nenhum treino registrado</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ HOME — PERSONAL ══════ -->
+    <div id="homePersonal" class="hidden">
+      <div class="section-label">Painel do Personal 💪</div>
+
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <span class="s-icon">👥</span>
+          <div class="s-label">Meus Alunos</div>
+          <div class="s-value blue" id="statAlunos">0</div>
+        </div>
+        <div class="stat-card green">
+          <span class="s-icon">📋</span>
+          <div class="s-label">Fichas Ativas</div>
+          <div class="s-value green" id="statFichas">0</div>
+        </div>
+        <div class="stat-card orange">
+          <span class="s-icon">🔥</span>
+          <div class="s-label">Treinaram Hoje</div>
+          <div class="s-value orange" id="statTreinaHoje">0</div>
+        </div>
+        <div class="stat-card red">
+          <span class="s-icon">⚠️</span>
+          <div class="s-label">Inativos (+3d)</div>
+          <div class="s-value red" id="statInativos">0</div>
+        </div>
+      </div>
+
+      <!-- Lista de Alunos -->
+      <div class="section-label">Meus Alunos</div>
+      <div id="listaAlunosPersonal">
+        <div class="empty-state">
+          <div class="empty-icon">👥</div>
+          <div class="empty-text">Nenhum aluno vinculado</div>
+          <button class="action-btn" onclick="abrirVincularAluno()">
+            <i class="fas fa-user-plus"></i> Vincular Aluno
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ NAV BAR (BOTTOM) ══════ -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="nav-btn active" onclick="navegarPara('home')" id="navHome">
+      <i class="fas fa-home"></i>
+      <span>Início</span>
+    </button>
+    <button class="nav-btn" onclick="navegarPara('fichas')" id="navFichas">
+      <i class="fas fa-clipboard-list"></i>
+      <span>Fichas</span>
+    </button>
+    <button class="nav-btn" onclick="navegarPara('historico')" id="navHistorico">
+      <i class="fas fa-history"></i>
+      <span>Histórico</span>
+    </button>
+    <button class="nav-btn" onclick="navegarPara('perfil')" id="navPerfil">
+      <i class="fas fa-user"></i>
+      <span>Perfil</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ══════════════ MODAL PERFIL ══════════════ -->
+<div class="modal-full" id="perfilModal">
+  <div class="modal-bar">
+    <h2><i class="fas fa-user-circle"></i> Meu Perfil</h2>
+    <button class="modal-close" onclick="fecharPerfil()">✕</button>
+  </div>
+  <div class="modal-body" id="perfilBody">
+    <div class="form-card">
+      <div class="perfil-avatar" id="perfilAvatar">🏋️</div>
+      <div class="form-group">
+        <label class="form-label">Nome</label>
+        <input type="text" id="perfilNome" class="form-field" placeholder="Seu nome">
+      </div>
+      <div class="form-group">
+        <label class="form-label">E-mail</label>
+        <input type="email" id="perfilEmail" class="form-field" disabled>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tipo de Conta</label>
+        <input type="text" id="perfilTipo" class="form-field" disabled>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Idade</label>
+        <input type="number" id="perfilIdade" class="form-field" placeholder="Sua idade">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Peso (kg)</label>
+        <input type="number" id="perfilPeso" class="form-field" placeholder="Ex: 75" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Altura (cm)</label>
+        <input type="number" id="perfilAltura" class="form-field" placeholder="Ex: 175">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Objetivo</label>
+        <select id="perfilObjetivo" class="form-field">
+          <option value="">Selecione</option>
+          <option value="hipertrofia">Hipertrofia</option>
+          <option value="emagrecimento">Emagrecimento</option>
+          <option value="resistencia">Resistência</option>
+          <option value="forca">Força</option>
+          <option value="saude">Saúde e Bem-estar</option>
+          <option value="reabilitacao">Reabilitação</option>
+        </select>
+      </div>
+      <button class="submit-btn" onclick="salvarPerfil()">
+        <i class="fas fa-save"></i> Salvar Perfil
+      </button>
+      <button class="submit-btn logout-btn" onclick="fazerLogout()" style="background:var(--red); margin-top:12px;">
+        <i class="fas fa-sign-out-alt"></i> Sair da Conta
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ OVERLAYS ══════════════ -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-icon" id="successIcon">✅</div>
+  <div class="success-msg" id="successMsg">Sucesso!</div>
+  <div class="success-detail" id="successDetail"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════ FIREBASE SDK ══════════════ -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script src="app.js"></script>
+</body>
+</html>
