@@ -606,46 +606,6 @@ function contarEstatisticasPersonal(alunos) {
   document.getElementById('statTreinaHoje').textContent = treinaHoje;
 }
 
-// ══════════════════════════════════════════════════════════════
-//  NAVEGAÇÃO — Bottom Nav
-// ══════════════════════════════════════════════════════════════
-function navegarPara(tela) {
-  // Atualizar nav buttons
-  document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
-  var navBtn = document.getElementById('nav' + tela.charAt(0).toUpperCase() + tela.slice(1));
-  if (navBtn) navBtn.classList.add('active');
-
-  // Por enquanto, só Home está implementado
-  switch(tela) {
-    case 'home':
-      atualizarUI();
-      break;
-    case 'fichas':
-      toast('📋 Fichas — Em breve na Fase 2!');
-      break;
-    case 'historico':
-      toast('📊 Histórico — Em breve na Fase 2!');
-      break;
-    case 'perfil':
-      abrirPerfil();
-      break;
-  }
-}
-
-// ══════════════════════════════════════════════════════════════
-//  PLACEHOLDER — Funções que serão implementadas na Fase 2
-// ══════════════════════════════════════════════════════════════
-function iniciarTreino(fichaId, indice) {
-  toast('🏋️ Execução de treino — Em breve na Fase 2!');
-}
-
-function abrirVincularAluno() {
-  toast('👥 Vincular aluno — Em breve na Fase 3!');
-}
-
-function abrirAluno(alunoId) {
-  toast('👤 Detalhe do aluno — Em breve na Fase 3!');
-}
 
 // ══════════════════════════════════════════════════════════════
 //  HELPERS — Utilitários
