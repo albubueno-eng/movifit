@@ -210,6 +210,37 @@
     </div>
   </div>
 
+      <!-- ══════ TELA: FICHAS ══════ -->
+    <div id="telaFichas" class="tela hidden">
+      <div class="section-label">Minhas Fichas de Treino</div>
+      <button class="action-btn-full" onclick="abrirCriarFicha()">
+        <i class="fas fa-plus"></i> Nova Ficha de Treino
+      </button>
+      <div id="listaFichas" style="margin-top:16px;">
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <div class="empty-text">Nenhuma ficha criada ainda</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ TELA: HISTÓRICO ══════ -->
+    <div id="telaHistorico" class="tela hidden">
+      <div class="section-label">Histórico de Treinos</div>
+      <div id="filtroHistorico" class="filtro-row">
+        <button class="filtro-btn active" onclick="filtrarHistorico('todos', this)">Todos</button>
+        <button class="filtro-btn" onclick="filtrarHistorico('semana', this)">Semana</button>
+        <button class="filtro-btn" onclick="filtrarHistorico('mes', this)">Mês</button>
+      </div>
+      <div id="listaHistorico">
+        <div class="empty-state">
+          <div class="empty-icon">📊</div>
+          <div class="empty-text">Nenhum treino registrado ainda</div>
+        </div>
+      </div>
+    </div>
+
+
   <!-- ══════ NAV BAR (BOTTOM) ══════ -->
   <nav class="bottom-nav" id="bottomNav">
     <button class="nav-btn active" onclick="navegarPara('home')" id="navHome">
@@ -286,6 +317,208 @@
   </div>
 </div>
 
+<!-- ══════════════ MODAL: CRIAR/EDITAR FICHA ══════════════ -->
+<div class="modal-full" id="fichaModal">
+  <div class="modal-bar">
+    <h2><i class="fas fa-clipboard-list"></i> <span id="fichaModalTitulo">Nova Ficha</span></h2>
+    <button class="modal-close" onclick="fecharFichaModal()">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="form-card">
+      <input type="hidden" id="fichaEditId" value="">
+      <div class="form-group">
+        <label class="form-label">Nome da Ficha</label>
+        <input type="text" id="fichaNome" class="form-field" placeholder="Ex: Treino Hipertrofia">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Objetivo</label>
+        <select id="fichaObjetivo" class="form-field">
+          <option value="hipertrofia">Hipertrofia</option>
+          <option value="forca">Força</option>
+          <option value="resistencia">Resistência</option>
+          <option value="emagrecimento">Emagrecimento</option>
+          <option value="geral">Geral</option>
+        </select>
+      </div>
+
+      <div class="section-label" style="margin-top:24px;">Divisões do Treino</div>
+      <div id="divisoesList"></div>
+      <button class="action-btn" onclick="adicionarDivisao()" style="margin-top:12px; width:100%; justify-content:center;">
+        <i class="fas fa-plus"></i> Adicionar Divisão (A, B, C...)
+      </button>
+
+      <button class="submit-btn" onclick="salvarFicha()" style="margin-top:24px;" id="btnSalvarFicha">
+        <i class="fas fa-save"></i> Salvar Ficha
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL: ADICIONAR EXERCÍCIO ══════════════ -->
+<div class="modal-full" id="exercicioModal" style="z-index:6000;">
+  <div class="modal-bar">
+    <h2><i class="fas fa-dumbbell"></i> Adicionar Exercício</h2>
+    <button class="modal-close" onclick="fecharExercicioModal()">✕</button>
+  </div>
+  <div class="modal-body">
+    <!-- Busca -->
+    <div class="search-wrap" style="margin-bottom:16px;">
+      <input type="text" id="buscaExercicio" class="form-field" placeholder="Buscar exercício..." oninput="filtrarExercicios()">
+    </div>
+
+    <!-- Filtro por grupo -->
+    <div class="filtro-row" id="filtroGrupo" style="margin-bottom:16px; flex-wrap:wrap;">
+      <button class="filtro-btn active" onclick="filtrarGrupo('todos', this)">Todos</button>
+      <button class="filtro-btn" onclick="filtrarGrupo('peito', this)">Peito</button>
+      <button class="filtro-btn" onclick="filtrarGrupo('costas', this)">Costas</button>
+      <button class="filtro-btn" onclick="filtrarGrupo('ombros', this)">Ombros</button>
+      <button class="filtro-btn" onclick="filtrarGrupo('biceps', this)">Bíceps</button>
+      <button class="filtro-btn" onclick="filtrarGrupo('triceps', this)">Tríceps</button>
+      <button class="filtro-btn" onclick="filtrarGrupo('pernas', this)">Pernas</button>
+      <button class="filtro-btn" onclick="filtrarGrupo('gluteos', this)">Glúteos</button>
+      <button class="filtro-btn" onclick="filtrarGrupo('abdomen', this)">Abdômen</button>
+      <button class="filtro-btn" onclick="filtrarGrupo('cardio', this)">Cardio</button>
+    </div>
+
+    <div id="listaExerciciosBiblioteca"></div>
+
+    <!-- Exercício customizado -->
+    <div class="section-label" style="margin-top:24px;">Não encontrou? Crie o seu</div>
+    <div class="form-card" style="padding:16px;">
+      <input type="text" id="exCustomNome" class="form-field" placeholder="Nome do exercício" style="margin-bottom:8px;">
+      <select id="exCustomGrupo" class="form-field" style="margin-bottom:8px;">
+        <option value="peito">Peito</option>
+        <option value="costas">Costas</option>
+        <option value="ombros">Ombros</option>
+        <option value="biceps">Bíceps</option>
+        <option value="triceps">Tríceps</option>
+        <option value="pernas">Pernas</option>
+        <option value="gluteos">Glúteos</option>
+        <option value="abdomen">Abdômen</option>
+        <option value="cardio">Cardio</option>
+      </select>
+      <button class="action-btn" onclick="adicionarExCustom()" style="width:100%; justify-content:center;">
+        <i class="fas fa-plus"></i> Criar e Adicionar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL: CONFIG EXERCÍCIO (séries/reps/carga) ══════════════ -->
+<div class="modal-full" id="configExModal" style="z-index:6500;">
+  <div class="modal-bar">
+    <h2><i class="fas fa-sliders-h"></i> Configurar Exercício</h2>
+    <button class="modal-close" onclick="fecharConfigEx()">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="form-card" style="text-align:center;">
+      <div class="config-ex-icon" id="configExIcon">🏋️</div>
+      <h3 class="config-ex-nome" id="configExNome">Exercício</h3>
+      <p class="config-ex-grupo" id="configExGrupo">Grupo</p>
+
+      <div class="config-grid">
+        <div class="config-item">
+          <label class="form-label">Séries</label>
+          <div class="stepper">
+            <button class="stepper-btn" onclick="stepperChange('cfgSeries', -1)">−</button>
+            <input type="number" id="cfgSeries" class="stepper-input" value="3" min="1" max="20">
+            <button class="stepper-btn" onclick="stepperChange('cfgSeries', 1)">+</button>
+          </div>
+        </div>
+        <div class="config-item">
+          <label class="form-label">Repetições</label>
+          <div class="stepper">
+            <button class="stepper-btn" onclick="stepperChange('cfgReps', -1)">−</button>
+            <input type="number" id="cfgReps" class="stepper-input" value="12" min="1" max="100">
+            <button class="stepper-btn" onclick="stepperChange('cfgReps', 1)">+</button>
+          </div>
+        </div>
+        <div class="config-item">
+          <label class="form-label">Carga (kg)</label>
+          <div class="stepper">
+            <button class="stepper-btn" onclick="stepperChange('cfgCarga', -2.5)">−</button>
+            <input type="number" id="cfgCarga" class="stepper-input" value="0" min="0" max="500" step="0.5">
+            <button class="stepper-btn" onclick="stepperChange('cfgCarga', 2.5)">+</button>
+          </div>
+        </div>
+        <div class="config-item">
+          <label class="form-label">Descanso (seg)</label>
+          <div class="stepper">
+            <button class="stepper-btn" onclick="stepperChange('cfgDescanso', -15)">−</button>
+            <input type="number" id="cfgDescanso" class="stepper-input" value="60" min="0" max="600" step="15">
+            <button class="stepper-btn" onclick="stepperChange('cfgDescanso', 15)">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:16px;">
+        <label class="form-label">Observações</label>
+        <input type="text" id="cfgObs" class="form-field" placeholder="Ex: Pegar leve, focar na descida...">
+      </div>
+
+      <button class="submit-btn" onclick="confirmarExercicio()">
+        <i class="fas fa-check"></i> Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL: EXECUÇÃO DO TREINO ══════════════ -->
+<div class="modal-full" id="treinoModal" style="z-index:7000;">
+  <div class="modal-bar">
+    <h2><i class="fas fa-play-circle"></i> <span id="treinoModalTitulo">Treino A</span></h2>
+    <button class="modal-close" onclick="confirmarSairTreino()">✕</button>
+  </div>
+  <div class="modal-body" style="padding-bottom:120px;">
+    <!-- Timer flutuante -->
+    <div id="timerBar" class="timer-bar hidden">
+      <div class="timer-icon">⏱️</div>
+      <div class="timer-text">
+        <div class="timer-label">Descanso</div>
+        <div class="timer-value" id="timerValue">60</div>
+      </div>
+      <button class="timer-skip" onclick="pularTimer()">Pular</button>
+    </div>
+
+    <!-- Cronômetro do treino -->
+    <div class="treino-crono">
+      <div class="crono-icon">🔥</div>
+      <div class="crono-tempo" id="cronoTempo">00:00</div>
+      <div class="crono-label">Tempo de treino</div>
+    </div>
+
+    <div id="treinoExercicios"></div>
+  </div>
+
+  <!-- Barra fixa inferior -->
+  <div class="treino-footer">
+    <div class="treino-progress">
+      <div class="treino-progress-bar" id="treinoProgressBar" style="width:0%"></div>
+    </div>
+    <div class="treino-footer-info">
+      <span id="treinoProgressText">0/0 exercícios</span>
+      <button class="submit-btn" onclick="finalizarTreino()" id="btnFinalizarTreino" style="max-width:200px; padding:12px 20px; font-size:.85rem;">
+        <i class="fas fa-flag-checkered"></i> Finalizar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL: RESUMO PÓS-TREINO ══════════════ -->
+<div class="modal-full" id="resumoModal" style="z-index:7500;">
+  <div class="modal-body" style="padding-top:60px;">
+    <div class="resumo-card">
+      <div class="resumo-icon">🏆</div>
+      <h2 class="resumo-titulo">Treino Concluído!</h2>
+      <div class="resumo-grid" id="resumoGrid"></div>
+      <button class="submit-btn" onclick="fecharResumo()" style="margin-top:24px;">
+        <i class="fas fa-home"></i> Voltar ao Início
+      </button>
+    </div>
+  </div>
+</div>
+
+  
 <!-- ══════════════ OVERLAYS ══════════════ -->
 <div class="success-overlay" id="successOverlay">
   <div class="success-icon" id="successIcon">✅</div>
