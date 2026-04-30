@@ -144,6 +144,8 @@ function selecionarTipo(btn, tipo) {
 }
 
 function fazerCadastro() {
+  var lgpd = document.getElementById('lgpdCheck');
+if (lgpd && !lgpd.checked) { err.textContent = 'Aceite os termos da LGPD para criar sua conta'; shakeAuth(); return; }
   var nome = document.getElementById('cadNome').value.trim();
   var email = document.getElementById('cadEmail').value.trim();
   var senha = document.getElementById('cadPass').value.trim();
