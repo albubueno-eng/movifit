@@ -948,3 +948,384 @@ select.form-field option { background: #1c1c1e; color: var(--text-primary); }
   z-index: auto;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   FASE 3 — PERSONAL TRAINER + VÍNCULO
+   ══════════════════════════════════════════════════════════════ */
+
+/* ══════════════ CÓDIGO DE VINCULAÇÃO ══════════════ */
+.codigo-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px 24px;
+  background: rgba(255, 149, 0, .08);
+  border: 2px dashed rgba(255, 149, 0, .3);
+  border-radius: var(--r-lg);
+  margin: 0 auto;
+  max-width: 300px;
+}
+
+.codigo-text {
+  font-size: 2rem;
+  font-weight: 900;
+  font-family: var(--mono);
+  color: var(--orange);
+  letter-spacing: .25em;
+  text-transform: uppercase;
+}
+
+.codigo-copy {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: none;
+  background: var(--orange-soft);
+  color: var(--orange);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--dur) var(--ease);
+  flex-shrink: 0;
+}
+
+.codigo-copy:hover {
+  background: var(--orange);
+  color: #fff;
+}
+
+.codigo-copy:active {
+  transform: scale(.9);
+}
+
+.codigo-input {
+  text-align: center;
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .3em !important;
+  text-transform: uppercase;
+}
+
+/* ══════════════ SOLICITAÇÃO CARD ══════════════ */
+.solicitacao-card {
+  background: var(--surface-1);
+  border: .5px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px 18px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  transition: all var(--dur) var(--ease);
+  animation: slideIn .3s var(--ease);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.solicitacao-card:hover {
+  background: var(--surface-2);
+}
+
+.solicitacao-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--blue-soft);
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .85rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.solicitacao-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.solicitacao-nome {
+  font-size: .88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -.01em;
+}
+
+.solicitacao-meta {
+  font-size: .7rem;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.solicitacao-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.solicitacao-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: none;
+  font-size: .9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--dur) var(--ease);
+}
+
+.solicitacao-btn.aceitar {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.solicitacao-btn.aceitar:hover {
+  background: var(--green);
+  color: #fff;
+}
+
+.solicitacao-btn.recusar {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.solicitacao-btn.recusar:hover {
+  background: var(--red);
+  color: #fff;
+}
+
+.solicitacao-btn:active {
+  transform: scale(.9);
+}
+
+/* ══════════════ PERSONAL CARD (visão do aluno) ══════════════ */
+.personal-card {
+  background: var(--surface-1);
+  border: .5px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  transition: all var(--dur) var(--ease);
+}
+
+.personal-card:hover {
+  border-color: var(--border-hover);
+}
+
+.personal-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--orange), #ff6b00);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(255, 149, 0, .2);
+}
+
+.personal-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.personal-nome {
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--text-white);
+  letter-spacing: -.02em;
+}
+
+.personal-status {
+  font-size: .7rem;
+  color: var(--green);
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.personal-status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  display: inline-block;
+}
+
+.personal-desvincular {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: var(--red-soft);
+  color: var(--red);
+  font-size: .8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--dur) var(--ease);
+  flex-shrink: 0;
+}
+
+.personal-desvincular:hover {
+  background: var(--red);
+  color: #fff;
+}
+
+/* ══════════════ PENDENTE BADGE ══════════════ */
+.pendente-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: var(--r-full);
+  background: var(--yellow-soft);
+  color: var(--yellow);
+  font-size: .6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  animation: pendentePulse 2s ease-in-out infinite;
+}
+
+@keyframes pendentePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .6; }
+}
+
+/* ══════════════ ALUNO DETALHE — Melhorias ══════════════ */
+#alunoDetalheModal .stats-grid {
+  margin-bottom: 0;
+}
+
+#alunoDetalheModal .perfil-avatar {
+  margin-bottom: 12px;
+}
+
+.aluno-treino-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface-1);
+  border: .5px solid var(--border);
+  border-radius: var(--r-md);
+  margin-bottom: 8px;
+  transition: all var(--dur) var(--ease);
+}
+
+.aluno-treino-item:hover {
+  background: var(--surface-2);
+}
+
+.aluno-treino-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--green-soft);
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .8rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.aluno-treino-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.aluno-treino-nome {
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.aluno-treino-meta {
+  font-size: .65rem;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.aluno-treino-tempo {
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--orange);
+  flex-shrink: 0;
+}
+
+/* ══════════════ NOTIFICAÇÃO BADGE (nav) ══════════════ */
+.nav-btn {
+  position: relative;
+}
+
+.nav-badge {
+  position: absolute;
+  top: 0;
+  right: 8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--red);
+  color: #fff;
+  font-size: .5rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(255, 69, 58, .4);
+  animation: badgePop .3s var(--ease-spring);
+}
+
+@keyframes badgePop {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+/* ══════════════ RESPONSIVE FASE 3 ══════════════ */
+@media (max-width: 480px) {
+  .codigo-text {
+    font-size: 1.6rem;
+    letter-spacing: .2em;
+  }
+
+  .codigo-display {
+    padding: 16px 20px;
+  }
+
+  .codigo-copy {
+    width: 40px;
+    height: 40px;
+  }
+
+  .solicitacao-card {
+    padding: 14px 16px;
+  }
+
+  .solicitacao-btn {
+    width: 34px;
+    height: 34px;
+  }
+}
