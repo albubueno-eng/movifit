@@ -154,6 +154,9 @@ if (lgpd && !lgpd.checked) { err.textContent = 'Aceite os termos da LGPD para cr
   var btn = document.getElementById('cadBtn');
 
   err.textContent = '';
+  
+var lgpd = document.getElementById('lgpdCheck');
+if (lgpd && !lgpd.checked) { err.textContent = 'Aceite os termos da LGPD para criar sua conta'; shakeAuth(); return; }
 
   if (!nome) { err.textContent = 'Informe seu nome'; shakeAuth(); return; }
   if (!email) { err.textContent = 'Informe seu e-mail'; shakeAuth(); return; }
