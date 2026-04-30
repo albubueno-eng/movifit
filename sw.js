@@ -2,7 +2,7 @@
 //  MOVIFIT — Service Worker v1.1
 // ══════════════════════════════════════════════════════════════
 
-var CACHE_NAME = 'movifit-v3.0';
+var CACHE_NAME = 'movifit-v3.1';
 var ASSETS = [
   './',
   './index.html',
