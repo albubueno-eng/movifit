@@ -896,6 +896,7 @@ function fecharFichaModal() {
 }
 
 function salvarFicha() {
+  if (fichaEditandoParaAluno) { salvarFichaComAluno(); return; }
   if (!currentUser) return;
   var nome = document.getElementById('fichaNome').value.trim();
   var objetivo = document.getElementById('fichaObjetivo').value;
@@ -1545,6 +1546,854 @@ function filtrarHistorico(filtro, btn) {
   document.querySelectorAll('#filtroHistorico .filtro-btn').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
   carregarHistorico();
+}
+
+
+// ══════════════════════════════════════════════════════════════
+//  FASE 3 — PERSONAL TRAINER + VÍNCULO DE ALUNOS
+// ══════════════════════════════════════════════════════════════
+
+var alunoDetalheAtual = null;
+
+// ══════════════════════════════════════════════════════════════
+//  CÓDIGO DE VINCULAÇÃO — Gerar/Gerenciar
+// ══════════════════════════════════════════════════════════════
+function gerarCodigoAleatorio() {
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var codigo = '';
+  for (var i = 0; i < 6; i++) {
+    codigo += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return codigo;
+}
+
+function abrirVincularAluno() {
+  if (!currentUser || !userData || userData.tipo !== 'personal') {
+    toast('Apenas personais podem vincular alunos');
+    return;
+  }
+
+  document.getElementById('vincularModal').classList.add('show');
+  carregarCodigoVinculo();
+  carregarSolicitacoes();
+}
+
+function fecharVincularModal() {
+  document.getElementById('vincularModal').classList.remove('show');
+}
+
+function carregarCodigoVinculo() {
+  db.collection('codigos').where('personalId', '==', currentUser.uid).where('ativo', '==', true).limit(1).get()
+    .then(function(snapshot) {
+      if (!snapshot.empty) {
+        var doc = snapshot.docs[0];
+        document.getElementById('codigoText').textContent = doc.data().codigo;
+      } else {
+        gerarNovoCodigo();
+      }
+    })
+    .catch(function(error) {
+      console.error('Erro ao carregar código:', error);
+    });
+}
+
+function gerarNovoCodigo() {
+  if (!currentUser) return;
+
+  var codigo = gerarCodigoAleatorio();
+
+  // Desativar códigos antigos
+  db.collection('codigos').where('personalId', '==', currentUser.uid).where('ativo', '==', true).get()
+    .then(function(snapshot) {
+      var batch = db.batch();
+      snapshot.forEach(function(doc) {
+        batch.update(doc.ref, { ativo: false });
+      });
+
+      // Criar novo código
+      var novoRef = db.collection('codigos').doc();
+      batch.set(novoRef, {
+        codigo: codigo,
+        personalId: currentUser.uid,
+        personalNome: userData.nome || 'Personal',
+        ativo: true,
+        criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      return batch.commit();
+    })
+    .then(function() {
+      document.getElementById('codigoText').textContent = codigo;
+      toast('✅ Novo código gerado!');
+    })
+    .catch(function(error) {
+      toast('Erro ao gerar código: ' + error.message);
+    });
+}
+
+function copiarCodigo() {
+  var codigo = document.getElementById('codigoText').textContent;
+  if (!codigo || codigo === '------') return;
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(codigo).then(function() {
+      toast('📋 Código copiado!');
+    });
+  } else {
+    var input = document.createElement('input');
+    input.value = codigo;
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand('copy');
+    document.body.removeChild(input);
+    toast('📋 Código copiado!');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  VINCULAR POR E-MAIL
+// ══════════════════════════════════════════════════════════════
+function vincularPorEmail() {
+  if (!currentUser) return;
+  var email = document.getElementById('vincularEmail').value.trim().toLowerCase();
+  if (!email) { toast('Informe o e-mail do aluno'); return; }
+
+  // Buscar usuário pelo e-mail
+  db.collection('users').where('email', '==', email).where('tipo', '==', 'aluno').limit(1).get()
+    .then(function(snapshot) {
+      if (snapshot.empty) {
+        toast('Aluno não encontrado com este e-mail');
+        return;
+      }
+
+      var alunoDoc = snapshot.docs[0];
+      var alunoData = alunoDoc.data();
+      var alunoId = alunoDoc.id;
+
+      // Verificar se já está vinculado
+      return db.collection('users').doc(currentUser.uid).collection('alunos').doc(alunoId).get()
+        .then(function(existente) {
+          if (existente.exists) {
+            toast('Este aluno já está vinculado');
+            return;
+          }
+
+          // Criar solicitação
+          return db.collection('solicitacoes').add({
+            personalId: currentUser.uid,
+            personalNome: userData.nome || 'Personal',
+            alunoId: alunoId,
+            alunoNome: alunoData.nome || 'Aluno',
+            alunoEmail: email,
+            tipo: 'email',
+            status: 'pendente',
+            criadaEm: firebase.firestore.FieldValue.serverTimestamp()
+          }).then(function() {
+            toast('✅ Convite enviado para ' + alunoData.nome + '!');
+            document.getElementById('vincularEmail').value = '';
+            carregarSolicitacoes();
+          });
+        });
+    })
+    .catch(function(error) {
+      toast('Erro: ' + error.message);
+    });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SOLICITAÇÕES — Personal vê pendentes
+// ══════════════════════════════════════════════════════════════
+function carregarSolicitacoes() {
+  if (!currentUser) return;
+
+  var el = document.getElementById('listaSolicitacoes');
+
+  db.collection('solicitacoes')
+    .where('personalId', '==', currentUser.uid)
+    .where('status', '==', 'pendente')
+    .orderBy('criadaEm', 'desc')
+    .get()
+    .then(function(snapshot) {
+      if (snapshot.empty) {
+        el.innerHTML = '<div class="empty-state small"><div class="empty-text" style="font-size:.8rem;">Nenhuma solicitação pendente</div></div>';
+        return;
+      }
+
+      var html = '';
+      snapshot.forEach(function(doc) {
+        var s = doc.data();
+        var iniciais = (s.alunoNome || '??').substring(0, 2).toUpperCase();
+        html += '<div class="solicitacao-card">' +
+          '<div class="solicitacao-avatar">' + iniciais + '</div>' +
+          '<div class="solicitacao-info">' +
+            '<div class="solicitacao-nome">' + escapeHtml(s.alunoNome) + '</div>' +
+            '<div class="solicitacao-meta">' + escapeHtml(s.alunoEmail || 'Via código') + ' • Pendente</div>' +
+          '</div>' +
+          '<div class="solicitacao-actions">' +
+            '<button class="solicitacao-btn aceitar" onclick="aceitarSolicitacao(\'' + doc.id + '\')"><i class="fas fa-check"></i></button>' +
+            '<button class="solicitacao-btn recusar" onclick="recusarSolicitacao(\'' + doc.id + '\')"><i class="fas fa-times"></i></button>' +
+          '</div>' +
+        '</div>';
+      });
+      el.innerHTML = html;
+
+      // Badge de notificação
+      atualizarBadgeSolicitacoes(snapshot.size);
+    })
+    .catch(function(error) {
+      console.error('Erro ao carregar solicitações:', error);
+    });
+}
+
+function atualizarBadgeSolicitacoes(count) {
+  var navHome = document.getElementById('navHome');
+  var existente = navHome.querySelector('.nav-badge');
+  if (existente) existente.remove();
+
+  if (count > 0) {
+    var badge = document.createElement('span');
+    badge.className = 'nav-badge';
+    badge.textContent = count;
+    navHome.appendChild(badge);
+  }
+}
+
+function aceitarSolicitacao(solicitacaoId) {
+  if (!currentUser) return;
+
+  db.collection('solicitacoes').doc(solicitacaoId).get()
+    .then(function(doc) {
+      if (!doc.exists) return;
+      var s = doc.data();
+
+      var batch = db.batch();
+
+      // Adicionar aluno na subcoleção do personal
+      var alunoRef = db.collection('users').doc(currentUser.uid).collection('alunos').doc(s.alunoId);
+      batch.set(alunoRef, {
+        alunoId: s.alunoId,
+        nome: s.alunoNome,
+        email: s.alunoEmail || '',
+        objetivo: '',
+        ultimoTreino: null,
+        vinculadoEm: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      // Salvar referência do personal no perfil do aluno
+      var alunoPerfilRef = db.collection('users').doc(s.alunoId);
+      batch.update(alunoPerfilRef, {
+        personalId: currentUser.uid,
+        personalNome: userData.nome || 'Personal'
+      });
+
+      // Atualizar status da solicitação
+      batch.update(doc.ref, { status: 'aceita' });
+
+      return batch.commit();
+    })
+    .then(function() {
+      toast('✅ Aluno vinculado com sucesso!');
+      carregarSolicitacoes();
+      carregarDashPersonal();
+    })
+    .catch(function(error) {
+      toast('Erro: ' + error.message);
+    });
+}
+
+function recusarSolicitacao(solicitacaoId) {
+  if (!confirm('Recusar esta solicitação?')) return;
+
+  db.collection('solicitacoes').doc(solicitacaoId).update({ status: 'recusada' })
+    .then(function() {
+      toast('Solicitação recusada');
+      carregarSolicitacoes();
+    });
+}
+
+// ═══════════════════════════════════════════════════════
+//  FASE 3  —  PARTE 2: ALUNO (código, personal, detalhe)
+// ═══════════════════════════════════════════════════════
+
+// ── MODAL INSERIR CÓDIGO (aluno) ──────────────────────
+function abrirCodigoModal() {
+  document.getElementById('codigoModal').classList.add('show');
+  document.getElementById('inputCodigo').value = '';
+  document.getElementById('codigoErro').textContent = '';
+  document.getElementById('codigoSucesso').classList.add('hidden');
+  document.getElementById('codigoForm').classList.remove('hidden');
+  carregarMeuPersonal();
+}
+
+function fecharCodigoModal() {
+  document.getElementById('codigoModal').classList.remove('show');
+}
+
+function carregarMeuPersonal() {
+  var box = document.getElementById('meuPersonalHome');
+  if (!box) return;
+
+  db.collection('users').doc(currentUser.uid).get().then(function(doc) {
+    var data = doc.data();
+    if (!data || !data.personalId) {
+      box.innerHTML =
+        '<div class="empty-state small">' +
+          '<div class="empty-text" style="font-size:.82rem;">Sem personal vinculado</div>' +
+          '<button class="action-btn" onclick="abrirCodigoModal()"><i class="fas fa-link"></i> Vincular Personal</button>' +
+        '</div>';
+      return;
+    }
+
+    // Verificar se há solicitação pendente
+    if (data.personalPendente) {
+      box.innerHTML =
+        '<div class="personal-card">' +
+          '<div class="personal-avatar"><i class="fas fa-hourglass-half"></i></div>' +
+          '<div class="personal-info">' +
+            '<div class="personal-nome">Aguardando aprovação</div>' +
+            '<div class="pendente-badge"><i class="fas fa-clock"></i> Pendente</div>' +
+          '</div>' +
+          '<button class="personal-desvincular" onclick="cancelarSolicitacao()" title="Cancelar"><i class="fas fa-times"></i></button>' +
+        '</div>';
+      return;
+    }
+
+    // Personal vinculado — buscar dados
+    db.collection('users').doc(data.personalId).get().then(function(pDoc) {
+      if (!pDoc.exists) {
+        box.innerHTML = '<div class="empty-state small"><div class="empty-text" style="font-size:.82rem;">Personal não encontrado</div></div>';
+        return;
+      }
+      var p = pDoc.data();
+      var iniciais = (p.nome || 'P').split(' ').map(function(w) { return w.charAt(0); }).join('').substring(0, 2).toUpperCase();
+      box.innerHTML =
+        '<div class="personal-card">' +
+          '<div class="personal-avatar">' + iniciais + '</div>' +
+          '<div class="personal-info">' +
+            '<div class="personal-nome">' + (p.nome || 'Personal') + '</div>' +
+            '<div class="personal-status">Vinculado</div>' +
+          '</div>' +
+          '<button class="personal-desvincular" onclick="desvincularPersonal()" title="Desvincular"><i class="fas fa-unlink"></i></button>' +
+        '</div>';
+    });
+  });
+}
+
+// ── ENVIAR CÓDIGO ─────────────────────────────────────
+function enviarCodigo() {
+  var codigo = document.getElementById('inputCodigo').value.trim().toUpperCase();
+  var erro = document.getElementById('codigoErro');
+  erro.textContent = '';
+
+  if (codigo.length !== 6) {
+    erro.textContent = 'O código deve ter 6 caracteres';
+    return;
+  }
+
+  // Buscar personal com esse código
+  db.collection('users')
+    .where('codigoVinculo', '==', codigo)
+    .where('tipo', '==', 'personal')
+    .limit(1)
+    .get()
+    .then(function(snap) {
+      if (snap.empty) {
+        erro.textContent = 'Código não encontrado. Verifique com seu personal.';
+        return;
+      }
+
+      var personalDoc = snap.docs[0];
+      var personalId = personalDoc.id;
+      var personalData = personalDoc.data();
+
+      if (personalId === currentUser.uid) {
+        erro.textContent = 'Você não pode vincular a si mesmo';
+        return;
+      }
+
+      // Verificar se já está vinculado
+      return db.collection('users').doc(currentUser.uid).get().then(function(myDoc) {
+        var myData = myDoc.data();
+        if (myData.personalId === personalId && !myData.personalPendente) {
+          erro.textContent = 'Você já está vinculado a este personal';
+          return;
+        }
+
+        // Criar solicitação
+        var batch = db.batch();
+
+        // Marcar no aluno
+        batch.update(db.collection('users').doc(currentUser.uid), {
+          personalId: personalId,
+          personalPendente: true,
+          atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // Criar solicitação na subcoleção do personal
+        var solRef = db.collection('users').doc(personalId).collection('solicitacoes').doc(currentUser.uid);
+        batch.set(solRef, {
+          alunoId: currentUser.uid,
+          alunoNome: currentUser.displayName || 'Aluno',
+          alunoEmail: currentUser.email,
+          status: 'pendente',
+          criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        return batch.commit().then(function() {
+          document.getElementById('codigoForm').classList.add('hidden');
+          document.getElementById('codigoSucesso').classList.remove('hidden');
+          document.getElementById('personalNomeSucesso').textContent = personalData.nome || 'Personal';
+          toast('✅ Solicitação enviada!');
+          carregarMeuPersonal();
+        });
+      });
+    })
+    .catch(function(error) {
+      console.error('Erro ao enviar código:', error);
+      erro.textContent = 'Erro ao processar. Tente novamente.';
+    });
+}
+
+// ── CANCELAR SOLICITAÇÃO (aluno) ──────────────────────
+function cancelarSolicitacao() {
+  if (!confirm('Cancelar a solicitação de vínculo?')) return;
+
+  db.collection('users').doc(currentUser.uid).get().then(function(doc) {
+    var data = doc.data();
+    if (!data || !data.personalId) return;
+
+    var batch = db.batch();
+    batch.update(db.collection('users').doc(currentUser.uid), {
+      personalId: firebase.firestore.FieldValue.delete(),
+      personalPendente: firebase.firestore.FieldValue.delete(),
+      atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    var solRef = db.collection('users').doc(data.personalId).collection('solicitacoes').doc(currentUser.uid);
+    batch.delete(solRef);
+
+    return batch.commit();
+  }).then(function() {
+    toast('❌ Solicitação cancelada');
+    carregarMeuPersonal();
+  });
+}
+
+// ── DESVINCULAR PERSONAL (aluno) ──────────────────────
+function desvincularPersonal() {
+  if (!confirm('Tem certeza que deseja desvincular do seu personal?')) return;
+
+  db.collection('users').doc(currentUser.uid).get().then(function(doc) {
+    var data = doc.data();
+    if (!data || !data.personalId) return;
+
+    var personalId = data.personalId;
+    var batch = db.batch();
+
+    // Limpar dados no aluno
+    batch.update(db.collection('users').doc(currentUser.uid), {
+      personalId: firebase.firestore.FieldValue.delete(),
+      personalPendente: firebase.firestore.FieldValue.delete(),
+      atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Remover aluno da lista do personal
+    var alunoRef = db.collection('users').doc(personalId).collection('alunos').doc(currentUser.uid);
+    batch.delete(alunoRef);
+
+    return batch.commit();
+  }).then(function() {
+    toast('🔓 Personal desvinculado');
+    carregarMeuPersonal();
+  });
+}
+
+// ── DETALHE DO ALUNO (personal) ───────────────────────
+function abrirAluno(alunoId) {
+  var modal = document.getElementById('alunoDetalheModal');
+  modal.classList.add('show');
+
+  // Resetar conteúdo
+  document.getElementById('alunoDetalheNome').textContent = 'Carregando...';
+  document.getElementById('alunoDetalheAvatar').textContent = '...';
+  document.getElementById('alunoDetalheFichas').innerHTML = '<div class="empty-state small"><div class="empty-text">Carregando...</div></div>';
+  document.getElementById('alunoDetalheHistorico').innerHTML = '';
+  document.getElementById('alunoDetalheStats').innerHTML = '';
+
+  // Salvar ID do aluno para ações
+  modal.dataset.alunoId = alunoId;
+
+  db.collection('users').doc(alunoId).get().then(function(doc) {
+    if (!doc.exists) {
+      toast('❌ Aluno não encontrado');
+      fecharAlunoDetalhe();
+      return;
+    }
+
+    var aluno = doc.data();
+    var nome = aluno.nome || 'Aluno';
+    var iniciais = nome.split(' ').map(function(w) { return w.charAt(0); }).join('').substring(0, 2).toUpperCase();
+
+    document.getElementById('alunoDetalheNome').textContent = nome;
+    document.getElementById('alunoDetalheAvatar').textContent = iniciais;
+
+    // Stats
+    carregarStatsAluno(alunoId);
+
+    // Fichas do aluno
+    carregarFichasAluno(alunoId);
+
+    // Histórico recente
+    carregarHistoricoAluno(alunoId);
+  });
+}
+
+function fecharAlunoDetalhe() {
+  document.getElementById('alunoDetalheModal').classList.remove('show');
+}
+
+// ── STATS DO ALUNO ────────────────────────────────────
+function carregarStatsAluno(alunoId) {
+  var container = document.getElementById('alunoDetalheStats');
+
+  db.collection('users').doc(alunoId).collection('historico')
+    .orderBy('data', 'desc')
+    .get()
+    .then(function(snap) {
+      var total = snap.size;
+      var tempoTotal = 0;
+      var semana = 0;
+      var sequencia = 0;
+
+      var agora = new Date();
+      var inicioSemana = new Date(agora);
+      inicioSemana.setDate(agora.getDate() - agora.getDay());
+      inicioSemana.setHours(0, 0, 0, 0);
+
+      // Calcular sequência e semana
+      var datasOrdenadas = [];
+      snap.forEach(function(doc) {
+        var d = doc.data();
+        tempoTotal += (d.duracao || 0);
+        if (d.data && d.data.toDate) {
+          var dt = d.data.toDate();
+          datasOrdenadas.push(dt);
+          if (dt >= inicioSemana) semana++;
+        }
+      });
+
+      // Calcular sequência de dias
+      if (datasOrdenadas.length > 0) {
+        datasOrdenadas.sort(function(a, b) { return b - a; });
+        sequencia = 1;
+        for (var i = 1; i < datasOrdenadas.length; i++) {
+          var diff = Math.floor((datasOrdenadas[i - 1] - datasOrdenadas[i]) / 86400000);
+          if (diff <= 1) sequencia++;
+          else break;
+        }
+      }
+
+      var minutosTotal = Math.round(tempoTotal / 60);
+
+      container.innerHTML =
+        '<div class="stats-grid">' +
+          '<div class="stat-card"><div class="stat-value">' + sequencia + '</div><div class="stat-label">Sequência</div></div>' +
+          '<div class="stat-card"><div class="stat-value">' + semana + '</div><div class="stat-label">Esta Semana</div></div>' +
+          '<div class="stat-card"><div class="stat-value">' + total + '</div><div class="stat-label">Total</div></div>' +
+          '<div class="stat-card"><div class="stat-value">' + minutosTotal + '<span class="stat-unit">min</span></div><div class="stat-label">Tempo</div></div>' +
+        '</div>';
+
+      // Verificar inatividade (+3 dias)
+      if (datasOrdenadas.length > 0) {
+        var ultimo = datasOrdenadas[0];
+        var diasInativo = Math.floor((agora - ultimo) / 86400000);
+        if (diasInativo >= 3) {
+          container.innerHTML +=
+            '<div style="background:var(--red-soft);border:.5px solid rgba(255,69,58,.2);border-radius:var(--r-md);padding:12px 16px;margin-top:12px;display:flex;align-items:center;gap:10px;">' +
+              '<i class="fas fa-exclamation-triangle" style="color:var(--red);font-size:1rem;"></i>' +
+              '<div style="flex:1;">' +
+                '<div style="font-size:.82rem;font-weight:600;color:var(--red);">Inativo há ' + diasInativo + ' dias</div>' +
+                '<div style="font-size:.68rem;color:var(--text-tertiary);margin-top:2px;">Último treino: ' + ultimo.toLocaleDateString('pt-BR') + '</div>' +
+              '</div>' +
+            '</div>';
+        }
+      }
+    });
+}
+
+// ── FICHAS DO ALUNO ───────────────────────────────────
+function carregarFichasAluno(alunoId) {
+  var container = document.getElementById('alunoDetalheFichas');
+
+  db.collection('users').doc(alunoId).collection('fichas')
+    .orderBy('criadoEm', 'desc')
+    .get()
+    .then(function(snap) {
+      if (snap.empty) {
+        container.innerHTML =
+          '<div class="empty-state small">' +
+            '<div class="empty-text" style="font-size:.78rem;">Nenhuma ficha criada</div>' +
+            '<button class="action-btn" onclick="criarFichaParaAluno(\'' + alunoId + '\')">' +
+              '<i class="fas fa-plus"></i> Criar Ficha' +
+            '</button>' +
+          '</div>';
+        return;
+      }
+
+      var html = '<button class="action-btn" style="margin-bottom:12px;" onclick="criarFichaParaAluno(\'' + alunoId + '\')"><i class="fas fa-plus"></i> Nova Ficha</button>';
+      snap.forEach(function(doc) {
+        var f = doc.data();
+        var divs = (f.divisoes || []).map(function(d) { return d.letra; }).join(', ');
+        var ativa = f.ativa ? '<span class="ficha-ativa-badge"><i class="fas fa-star"></i> Ativa</span>' : '';
+        html +=
+          '<div class="ficha-card" onclick="editarFichaAluno(\'' + alunoId + '\',\'' + doc.id + '\')">' +
+            '<div class="ficha-card-header">' +
+              '<div class="ficha-card-info">' +
+                '<div class="ficha-card-nome">' + (f.nome || 'Sem nome') + ' ' + ativa + '</div>' +
+                '<div class="ficha-card-meta">' + divs + '</div>' +
+              '</div>' +
+              '<i class="fas fa-chevron-right" style="color:var(--text-tertiary);font-size:.8rem;"></i>' +
+            '</div>' +
+          '</div>';
+      });
+      container.innerHTML = html;
+    });
+}
+
+// ── HISTÓRICO DO ALUNO ────────────────────────────────
+function carregarHistoricoAluno(alunoId) {
+  var container = document.getElementById('alunoDetalheHistorico');
+
+  db.collection('users').doc(alunoId).collection('historico')
+    .orderBy('data', 'desc')
+    .limit(10)
+    .get()
+    .then(function(snap) {
+      if (snap.empty) {
+        container.innerHTML = '<div class="empty-state small"><div class="empty-text" style="font-size:.78rem;">Nenhum treino registrado</div></div>';
+        return;
+      }
+
+      var html = '<div class="section-label" style="margin-top:0;">Últimos Treinos</div>';
+      snap.forEach(function(doc) {
+        var h = doc.data();
+        var dataStr = h.data && h.data.toDate ? h.data.toDate().toLocaleDateString('pt-BR') : '—';
+        var dur = h.duracao ? Math.round(h.duracao / 60) + 'min' : '—';
+        html +=
+          '<div class="aluno-treino-item">' +
+            '<div class="aluno-treino-badge"><i class="fas fa-dumbbell"></i></div>' +
+            '<div class="aluno-treino-info">' +
+              '<div class="aluno-treino-nome">' + (h.nomeDivisao || h.fichaNome || 'Treino') + '</div>' +
+              '<div class="aluno-treino-meta">' + dataStr + '</div>' +
+            '</div>' +
+            '<div class="aluno-treino-tempo">' + dur + '</div>' +
+          '</div>';
+      });
+      container.innerHTML = html;
+    });
+}
+
+// ── CRIAR FICHA PARA ALUNO ────────────────────────────
+function criarFichaParaAluno(alunoId) {
+  fecharAlunoDetalhe();
+  // Reutilizar o modal de criação de ficha, mas salvar na conta do aluno
+  fichaEditandoParaAluno = alunoId;
+  abrirCriarFicha();
+}
+
+var fichaEditandoParaAluno = null;
+
+function editarFichaAluno(alunoId, fichaId) {
+  fecharAlunoDetalhe();
+  fichaEditandoParaAluno = alunoId;
+  abrirEditarFicha(fichaId, alunoId);
+}
+
+// ── DESVINCULAR ALUNO (personal) ──────────────────────
+function desvincularAluno() {
+  var modal = document.getElementById('alunoDetalheModal');
+  var alunoId = modal.dataset.alunoId;
+  if (!alunoId) return;
+
+  if (!confirm('Tem certeza que deseja desvincular este aluno?')) return;
+
+  var batch = db.batch();
+
+  // Remover da subcoleção de alunos do personal
+  batch.delete(db.collection('users').doc(currentUser.uid).collection('alunos').doc(alunoId));
+
+  // Limpar personalId do aluno
+  batch.update(db.collection('users').doc(alunoId), {
+    personalId: firebase.firestore.FieldValue.delete(),
+    personalPendente: firebase.firestore.FieldValue.delete(),
+    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  batch.commit().then(function() {
+    toast('🔓 Aluno desvinculado');
+    fecharAlunoDetalhe();
+    carregarAlunosPersonal();
+  }).catch(function(error) {
+    console.error('Erro ao desvincular:', error);
+    toast('❌ Erro ao desvincular');
+  });
+}
+
+// ── CARREGAR ALUNOS DO PERSONAL ───────────────────────
+function carregarAlunosPersonal() {
+  var container = document.getElementById('listaAlunos');
+  if (!container) return;
+
+  db.collection('users').doc(currentUser.uid).collection('alunos')
+    .orderBy('vinculadoEm', 'desc')
+    .get()
+    .then(function(snap) {
+      if (snap.empty) {
+        container.innerHTML =
+          '<div class="empty-state">' +
+            '<div class="empty-icon">👥</div>' +
+            '<div class="empty-text">Nenhum aluno vinculado ainda</div>' +
+            '<button class="action-btn" onclick="abrirVincularAluno()"><i class="fas fa-user-plus"></i> Vincular Aluno</button>' +
+          '</div>';
+        return;
+      }
+
+      var html = '';
+      var promises = [];
+      var alunosDocs = [];
+
+      snap.forEach(function(doc) {
+        alunosDocs.push({ id: doc.id, data: doc.data() });
+        promises.push(db.collection('users').doc(doc.id).get());
+      });
+
+      Promise.all(promises).then(function(results) {
+        results.forEach(function(uDoc, idx) {
+          var alunoInfo = alunosDocs[idx];
+          var userData = uDoc.exists ? uDoc.data() : {};
+          var nome = userData.nome || alunoInfo.data.nome || 'Aluno';
+          var iniciais = nome.split(' ').map(function(w) { return w.charAt(0); }).join('').substring(0, 2).toUpperCase();
+          var objetivo = userData.objetivo || '';
+
+          html +=
+            '<div class="solicitacao-card" onclick="abrirAluno(\'' + alunoInfo.id + '\')" style="cursor:pointer;">' +
+              '<div class="solicitacao-avatar">' + iniciais + '</div>' +
+              '<div class="solicitacao-info">' +
+                '<div class="solicitacao-nome">' + nome + '</div>' +
+                '<div class="solicitacao-meta">' + (objetivo || 'Sem objetivo definido') + '</div>' +
+              '</div>' +
+              '<i class="fas fa-chevron-right" style="color:var(--text-tertiary);font-size:.8rem;"></i>' +
+            '</div>';
+        });
+        container.innerHTML = html;
+      });
+    });
+}
+
+// ── OVERRIDE: salvarFicha para suportar fichaEditandoParaAluno ──
+var _salvarFichaOriginal = typeof salvarFicha === 'function' ? salvarFicha : null;
+
+function salvarFichaComAluno() {
+  if (!fichaEditandoParaAluno) {
+    // Salvar normalmente (para o próprio usuário)
+    if (_salvarFichaOriginal) return _salvarFichaOriginal();
+    return;
+  }
+
+  // Salvar na conta do aluno
+  var alunoId = fichaEditandoParaAluno;
+  var nome = document.getElementById('fichaNome').value.trim();
+  var objetivo = document.getElementById('fichaObjetivo').value.trim();
+
+  if (!nome) { toast('❌ Dê um nome à ficha'); return; }
+  if (divisoesTemp.length === 0) { toast('❌ Adicione pelo menos uma divisão'); return; }
+
+  var fichaData = {
+    nome: nome,
+    objetivo: objetivo,
+    divisoes: divisoesTemp,
+    ativa: true,
+    criadoPor: currentUser.uid,
+    criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  // Desativar outras fichas do aluno
+  db.collection('users').doc(alunoId).collection('fichas')
+    .where('ativa', '==', true)
+    .get()
+    .then(function(snap) {
+      var batch = db.batch();
+      snap.forEach(function(doc) {
+        batch.update(doc.ref, { ativa: false });
+      });
+
+      if (fichaEditandoId) {
+        batch.update(db.collection('users').doc(alunoId).collection('fichas').doc(fichaEditandoId), fichaData);
+      } else {
+        batch.set(db.collection('users').doc(alunoId).collection('fichas').doc(), fichaData);
+      }
+
+      return batch.commit();
+    })
+    .then(function() {
+      toast('✅ Ficha salva para o aluno!');
+      fecharFichaModal();
+      fichaEditandoParaAluno = null;
+      // Reabrir detalhe do aluno
+      abrirAluno(alunoId);
+    })
+    .catch(function(error) {
+      console.error('Erro ao salvar ficha para aluno:', error);
+      toast('❌ Erro ao salvar ficha');
+    });
+}
+
+// ── ABRIR EDITAR FICHA DO ALUNO ───────────────────────
+function abrirEditarFicha(fichaId, alunoId) {
+  var userId = alunoId || currentUser.uid;
+
+  db.collection('users').doc(userId).collection('fichas').doc(fichaId).get().then(function(doc) {
+    if (!doc.exists) { toast('❌ Ficha não encontrada'); return; }
+
+    var f = doc.data();
+    fichaEditandoId = doc.id;
+    divisoesTemp = f.divisoes || [];
+
+    document.getElementById('fichaNome').value = f.nome || '';
+    document.getElementById('fichaObjetivo').value = f.objetivo || '';
+
+    renderizarDivisoes();
+    document.getElementById('fichaModal').classList.add('show');
+  });
+}
+
+// ── ATUALIZAR UI DO PERSONAL ──────────────────────────
+var _atualizarUIOriginal = typeof atualizarUI === 'function' ? atualizarUI : null;
+
+function atualizarUIPersonal() {
+  if (_atualizarUIOriginal) _atualizarUIOriginal();
+
+  db.collection('users').doc(currentUser.uid).get().then(function(doc) {
+    var data = doc.data();
+    if (data && data.tipo === 'personal') {
+      carregarAlunosPersonal();
+      atualizarBadgeSolicitacoes();
+    } else {
+      carregarMeuPersonal();
+    }
+  });
+}
+
+// Substituir atualizarUI pelo wrapper
+if (typeof atualizarUI === 'function') {
+  var _atualizarUIBase = atualizarUI;
+  atualizarUI = function() {
+    _atualizarUIBase();
+    setTimeout(function() {
+      if (currentUser) atualizarUIPersonal();
+    }, 500);
+  };
 }
 
 
