@@ -540,16 +540,21 @@
         Insira o código que seu personal compartilhou com você.
       </p>
 
-      <input type="text" id="codigoInput" class="form-field codigo-input" placeholder="Ex: ABC123" maxlength="6" style="text-align:center; font-size:1.5rem; font-weight:800; letter-spacing:.3em; text-transform:uppercase;">
+      <div id="codigoForm">
+        <input type="text" id="inputCodigo" class="form-field codigo-input" placeholder="Ex: ABC123" maxlength="6">
+        <div id="codigoErro" style="color:var(--red); font-size:.78rem; margin-top:8px;"></div>
+        <button class="submit-btn" onclick="enviarCodigo()" id="btnEnviarCodigo" style="margin-top:16px;">
+          <i class="fas fa-paper-plane"></i> Enviar Solicitação
+        </button>
+      </div>
 
-      <button class="submit-btn" onclick="enviarSolicitacao()" id="btnEnviarCodigo" style="margin-top:16px;">
-        <i class="fas fa-paper-plane"></i> Enviar Solicitação
-      </button>
-
-      <div id="statusVinculo" style="margin-top:20px;"></div>
+      <div id="codigoSucesso" class="hidden" style="margin-top:20px;">
+        <div style="font-size:2rem; margin-bottom:8px;">✅</div>
+        <p style="color:var(--green); font-weight:600;">Solicitação enviada!</p>
+        <p style="color:var(--text-tertiary); font-size:.78rem; margin-top:4px;">Aguardando aprovação de <strong id="personalNomeSucesso"></strong></p>
+      </div>
     </div>
 
-    <!-- Personal vinculado -->
     <div class="section-label" style="margin-top:24px;">Meu Personal</div>
     <div id="meuPersonal">
       <div class="empty-state small">
@@ -558,6 +563,7 @@
     </div>
   </div>
 </div>
+
 
 <!-- ══════════════ MODAL: DETALHE DO ALUNO (Personal vê) ══════════════ -->
 <div class="modal-full" id="alunoDetalheModal" style="z-index:5500;">
